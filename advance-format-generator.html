@@ -81,7 +81,9 @@
             >
 
             <!-- Default text display -->
-            <div class="bg-gray-50 p-3 rounded-md mb-4 text-sm text-gray-700">
+            <div
+              class="bg-gray-50 p-3 rounded-md mb-4 text-sm text-gray-700 text-justify"
+            >
               CPF advance payment through RTGS to employee at Nigam
               Headquarter/project against demand raised by DDO vide letter no.
             </div>
@@ -160,6 +162,14 @@
                   >
                     🔗
                   </span>
+                  <button
+                    v-if="issuedDateManuallyChanged"
+                    @click="resyncIssuedDate"
+                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 text-xs px-1"
+                    title="Re-sync with document date"
+                  >
+                    🔄
+                  </button>
                 </div>
               </div>
               <p
@@ -176,7 +186,9 @@
               <label class="block text-sm font-medium text-blue-800 mb-2"
                 >Preview:</label
               >
-              <div class="text-sm text-blue-700">{{ formattedPurpose }}</div>
+              <div class="text-sm text-blue-700 text-justify">
+                {{ formattedPurpose }}
+              </div>
             </div>
           </div>
         </div>
@@ -188,7 +200,7 @@
           </h3>
           <div class="bg-gray-50 p-4 rounded-lg">
             <div class="text-lg font-semibold text-gray-800">
-              Amount (Net): {{ particularsTotal.toLocaleString('en-IN', {
+              Amount: {{ particularsTotal.toLocaleString('en-IN', {
               minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
             </div>
           </div>
@@ -390,6 +402,7 @@
           showPreview: false,
           previewContent: "",
           issuedDateManuallyChanged: false,
+          isAutoSyncingDate: false,
           formData: {
             date: new Date().toISOString().split("T")[0],
             payeeName: "Yourself",
@@ -412,11 +425,11 @@
                 amount: 0,
               },
               {
-                description: "DY CAO, P&AD, OTPS, OBRA B",
+                description: "DY CAO, P&AD, OTPS, OBRA-'B'",
                 amount: 0,
               },
               {
-                description: "CFA&BO, CTPS, OBRA C",
+                description: "CFA&BO, CTPS, OBRA-'C'",
                 amount: 0,
               },
               {
@@ -424,11 +437,11 @@
                 amount: 0,
               },
               {
-                description: "BY CAO, CFA&BO, ANPARA - ATPS",
+                description: "BY CAO, CFA&BO, ANPARA-'A'TPS",
                 amount: 0,
               },
               {
-                description: "DY CAO, CFA&BO, ANPARA - BTPS",
+                description: "DY CAO, CFA&BO, ANPARA-'B'TPS",
                 amount: 0,
               },
               {
@@ -515,12 +528,19 @@
           "formData.date"(newDate) {
             // Only auto-sync if issued date hasn't been manually changed
             if (!this.issuedDateManuallyChanged) {
+              this.isAutoSyncingDate = true;
               this.formData.issuedLetterDate = newDate;
+              this.$nextTick(() => {
+                this.isAutoSyncingDate = false;
+              });
             }
           },
           // Track if user manually changes the issued date
           "formData.issuedLetterDate"() {
-            this.issuedDateManuallyChanged = true;
+            // Only mark as manually changed if it's not an automatic sync
+            if (!this.isAutoSyncingDate) {
+              this.issuedDateManuallyChanged = true;
+            }
           },
         },
         filters: {
@@ -533,6 +553,14 @@
           },
         },
         methods: {
+          resyncIssuedDate() {
+            this.issuedDateManuallyChanged = false;
+            this.isAutoSyncingDate = true;
+            this.formData.issuedLetterDate = this.formData.date;
+            this.$nextTick(() => {
+              this.isAutoSyncingDate = false;
+            });
+          },
           // Convert number to words (Indian numbering system)
           numberToWords(num) {
             if (num === 0) return "ZERO";
@@ -903,26 +931,22 @@
                             <h1 style="font-size: 18px; font-weight: bold; margin: 0;">U. P. Rajya Vidyut Utpadan Nigam Ltd.</h1>
                             <p style="margin: 5px 0;">CONTRIBUTORY PROVIDENT FUND TRUST</p>
                             <p style="font-weight: bold; margin: 10px 0;">PAYMENT AUTHORITY</p>
-                                                         <p style="text-align: right; margin: 10px 0;">Date: ${new Date(
-                                                           this.formData.date
-                                                         )
-                                                           .toLocaleDateString(
-                                                             "en-GB",
-                                                             {
-                                                               day: "2-digit",
-                                                               month: "2-digit",
-                                                               year: "numeric",
-                                                             }
-                                                           )
-                                                           .replace(
-                                                             /\//g,
-                                                             "."
-                                                           )}</p>
                         </div>
 
                         <div style="margin-bottom: 15px;">
-                             <p><strong>Name of Payee:</strong> <u>Yourself</u></p>
-                             <p><strong>Particulars of Payment:</strong> <u>${
+                             <div style="display: flex; justify-content: space-between; align-items: center;">
+                                 <p style="margin: 0;"><strong>Name of Payee:</strong> <u>Yourself</u></p>
+                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(
+                                   this.formData.date
+                                 )
+                                   .toLocaleDateString("en-GB", {
+                                     day: "2-digit",
+                                     month: "2-digit",
+                                     year: "numeric",
+                                   })
+                                   .replace(/\//g, ".")}</p>
+                             </div>
+                             <p style="text-align: justify;"><strong>Particulars of Payment:</strong> <u>${
                                this.formattedPurpose
                              }</u></p>
                         </div>
@@ -935,7 +959,7 @@
                          </div>
 
                         <div style="margin-bottom: 15px;">
-                            <p style="font-weight: bold;">Amount (Net): <u>${this.particularsTotal.toLocaleString(
+                            <p style="font-weight: bold;">Amount: <u>${this.particularsTotal.toLocaleString(
                               "en-IN",
                               {
                                 minimumFractionDigits: 2,
@@ -1000,8 +1024,8 @@
                             </tr>
                         </table>
 
-                        <div style="margin-top: 30px; text-align: left;">
-                            <p style="margin: 0;">Please Pay Rs. <strong>${this.particularsTotal.toLocaleString(
+                        <div style="margin-top: 30px; text-align: justify;">
+                            <p style="margin: 0; text-align: justify;">Please Pay Rs. <strong>${this.particularsTotal.toLocaleString(
                               "en-IN",
                               {
                                 minimumFractionDigits: 2,
@@ -1015,10 +1039,10 @@
                         <div style="margin-top: 30px;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
-                                    <td style="width: 50%; text-align: center; padding: 10px; border-bottom: 1px solid #000;">
+                                    <td style="width: 50%; text-align: center; padding: 30px 10px; border-bottom: 1px solid #000;">
                                         Accountant
                                     </td>
-                                    <td style="width: 50%; text-align: center; padding: 10px; border-bottom: 1px solid #000;">
+                                    <td style="width: 50%; text-align: center; padding: 30px 10px; border-bottom: 1px solid #000;">
                                         Secretary Trust
                                     </td>
                                 </tr>
@@ -1072,6 +1096,7 @@
                 TableCell,
                 AlignmentType,
                 WidthType,
+                BorderStyle,
               } = docxLib;
 
               // Create table rows for particulars
@@ -1197,27 +1222,85 @@
                         ],
                         alignment: AlignmentType.CENTER,
                       }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: `Date: ${new Date(this.formData.date)
-                              .toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })
-                              .replace(/\//g, ".")}`,
-                          }),
-                        ],
-                        alignment: AlignmentType.RIGHT,
-                      }),
                       new Paragraph(""),
 
-                      // Payee details
-                      new Paragraph({
-                        children: [
-                          new TextRun({ text: "Name of Payee: ", bold: true }),
-                          new TextRun({ text: "Yourself", underline: {} }),
+                      // Payee details with date on same line using table
+                      new Table({
+                        width: {
+                          size: 100,
+                          type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                          top: { style: BorderStyle.NONE },
+                          bottom: { style: BorderStyle.NONE },
+                          left: { style: BorderStyle.NONE },
+                          right: { style: BorderStyle.NONE },
+                          insideHorizontal: { style: BorderStyle.NONE },
+                          insideVertical: { style: BorderStyle.NONE },
+                        },
+                        rows: [
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Name of Payee: ",
+                                        bold: true,
+                                      }),
+                                      new TextRun({
+                                        text: "Yourself",
+                                        underline: {},
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                                width: {
+                                  size: 70,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: BorderStyle.NONE },
+                                  bottom: { style: BorderStyle.NONE },
+                                  left: { style: BorderStyle.NONE },
+                                  right: { style: BorderStyle.NONE },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Date: ",
+                                        bold: true,
+                                      }),
+                                      new TextRun({
+                                        text: new Date(this.formData.date)
+                                          .toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                          })
+                                          .replace(/\//g, "."),
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.RIGHT,
+                                  }),
+                                ],
+                                width: {
+                                  size: 30,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: BorderStyle.NONE },
+                                  bottom: { style: BorderStyle.NONE },
+                                  left: { style: BorderStyle.NONE },
+                                  right: { style: BorderStyle.NONE },
+                                },
+                              }),
+                            ],
+                          }),
                         ],
                       }),
                       new Paragraph({
@@ -1231,6 +1314,7 @@
                             underline: {},
                           }),
                         ],
+                        alignment: AlignmentType.JUSTIFIED,
                       }),
                       new Paragraph(""),
 
@@ -1254,7 +1338,7 @@
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "Amount (Net): ",
+                            text: "Amount: ",
                             bold: true,
                             size: 24,
                           }),
@@ -1693,7 +1777,7 @@
                             bold: true,
                           }),
                         ],
-                        alignment: AlignmentType.LEFT,
+                        alignment: AlignmentType.JUSTIFIED,
                       }),
                       new Paragraph(""),
 
@@ -1716,6 +1800,8 @@
                             children: [
                               new TableCell({
                                 children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
                                   new Paragraph({
                                     children: [new TextRun("Accountant")],
                                     alignment: AlignmentType.CENTER,
@@ -1734,6 +1820,8 @@
                               }),
                               new TableCell({
                                 children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
                                   new Paragraph({
                                     children: [new TextRun("Secretary Trust")],
                                     alignment: AlignmentType.CENTER,
@@ -1882,6 +1970,7 @@
           clearForm() {
             if (confirm("Are you sure you want to clear all form data?")) {
               this.issuedDateManuallyChanged = false;
+              this.isAutoSyncingDate = false;
               this.formData = {
                 date: new Date().toISOString().split("T")[0],
                 payeeName: "Yourself",
@@ -1904,11 +1993,11 @@
                     amount: 0,
                   },
                   {
-                    description: "DY CAO, P&AD, OTPS, OBRA B",
+                    description: "DY CAO, P&AD, OTPS, OBRA-'B'",
                     amount: 0,
                   },
                   {
-                    description: "CFA&BO, CTPS, OBRA C",
+                    description: "CFA&BO, CTPS, OBRA-'C'",
                     amount: 0,
                   },
                   {
@@ -1916,11 +2005,11 @@
                     amount: 0,
                   },
                   {
-                    description: "BY CAO, CFA&BO, ANPARA - ATPS",
+                    description: "BY CAO, CFA&BO, ANPARA-'A'TPS",
                     amount: 0,
                   },
                   {
-                    description: "DY CAO, CFA&BO, ANPARA - BTPS",
+                    description: "DY CAO, CFA&BO, ANPARA-'B'TPS",
                     amount: 0,
                   },
                   {
