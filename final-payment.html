@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Final Payment Authority Form - UPPCL</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Vue.js 2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+    <!-- docx library for generating DOCX files -->
+    <script type="module">
+      import * as docx from "https://cdn.skypack.dev/docx@8.2.2";
+      window.docx = docx;
+      console.log("DOCX library loaded via ESM:", Object.keys(docx));
+    </script>
+
+    <!-- FileSaver.js for downloading files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- Debug script to check library loading -->
+    <script>
+      window.addEventListener("load", function () {
+        console.log("Window loaded. Checking for docx library...");
+        console.log("window.docx:", typeof window.docx);
+        console.log("window.Docx:", typeof window.Docx);
+        console.log("global docx:", typeof docx);
+        if (window.docx) {
+          console.log(
+            "DOCX library available via window.docx:",
+            Object.keys(window.docx)
+          );
+        }
+        if (typeof docx !== "undefined") {
+          console.log(
+            "DOCX library available via global docx:",
+            Object.keys(docx)
+          );
+        }
+      });
+    </script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div id="app" class="container mx-auto p-6 max-w-4xl">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="text-center border-b pb-4">
+          <h1 class="text-2xl font-bold text-gray-800">
+            U. P. Rajya Vidyut Utpadan Nigam Ltd.
+          </h1>
+          <p class="text-lg text-gray-600 mt-1">
+            CONTRIBUTORY PROVIDENT FUND TRUST
+          </p>
+          <p class="text-xl font-semibold text-gray-700 mt-2">
+            PAYMENT AUTHORITY
+          </p>
+          <div class="mt-3 text-right">
+            <label class="text-sm text-gray-600">Date:</label>
+            <input
+              v-model="formData.date"
+              type="date"
+              class="ml-2 px-2 py-1 border rounded text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <!-- Payee Details -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">
+            Payee Details
+          </h3>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3"
+              >Particulars of Payment</label
+            >
+
+            <!-- Default text display for Final Payment -->
+            <div
+              class="bg-gray-50 p-3 rounded-md mb-4 text-sm text-gray-700 text-justify"
+            >
+              RTGS in favour of employee & their legal heirs listed below
+              towards CPF Final Payment on Demise, Retirement & Resignation with
+              interest to their SB a/c
+            </div>
+
+            <!-- Final letter info -->
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Issued vide letter no.</label
+              >
+              <div class="flex gap-3">
+                <input
+                  v-model="formData.issuedLetterNo"
+                  type="text"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 967"
+                />
+                <div class="flex-1 relative">
+                  <input
+                    v-model="formData.issuedLetterDate"
+                    type="date"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :class="{ 'border-blue-400 bg-blue-50': !issuedDateManuallyChanged }"
+                  />
+                  <span
+                    v-if="!issuedDateManuallyChanged"
+                    class="absolute right-8 top-1/2 transform -translate-y-1/2 text-blue-500 text-xs"
+                    title="Synced with document date"
+                  >
+                    🔗
+                  </span>
+                  <button
+                    v-if="issuedDateManuallyChanged"
+                    @click="resyncIssuedDate"
+                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 text-xs px-1"
+                    title="Re-sync with document date"
+                  >
+                    🔄
+                  </button>
+                </div>
+              </div>
+              <p
+                v-if="!issuedDateManuallyChanged"
+                class="text-xs text-blue-600 mt-1"
+              >
+                📅 Date synced with document date above. Change manually to
+                override.
+              </p>
+            </div>
+
+            <!-- Preview of formatted text -->
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <label class="block text-sm font-medium text-blue-800 mb-2"
+                >Preview:</label
+              >
+              <div class="text-sm text-blue-700 text-justify">
+                {{ formattedPurpose }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amount Section -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">
+            Amount Details
+          </h3>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-lg font-semibold text-gray-800">
+              Amount: {{ particularsTotal.toLocaleString('en-IN', {
+              minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Particulars -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">
+            Payment Particulars
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="border border-gray-300 px-3 py-2 text-left w-16">
+                    S.No.
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">
+                    Particulars
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left w-40">
+                    Amount (₹)
+                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left w-20">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(item, index) in formData.particulars"
+                  :key="index"
+                  class="hover:bg-gray-50"
+                >
+                  <td class="border border-gray-300 px-3 py-2">
+                    {{ index + 1 }}
+                  </td>
+                  <td class="border border-gray-300 px-3 py-2">
+                    <input
+                      v-model="item.description"
+                      type="text"
+                      class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded"
+                      placeholder="Enter description"
+                    />
+                  </td>
+                  <td class="border border-gray-300 px-3 py-2">
+                    <input
+                      v-model.number="item.amount"
+                      type="number"
+                      step="0.01"
+                      class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded"
+                      placeholder="0.00"
+                    />
+                  </td>
+                  <td class="border border-gray-300 px-3 py-2 text-center">
+                    <button
+                      @click="removeParticular(index)"
+                      :disabled="formData.particulars.length <= 1"
+                      class="text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed text-sm px-2 py-1"
+                      title="Remove this row"
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="bg-gray-100 font-semibold">
+                  <td class="border border-gray-300 px-3 py-2" colspan="3">
+                    Total
+                  </td>
+                  <td class="border border-gray-300 px-3 py-2">
+                    ₹ {{ particularsTotal | currency }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Add new row button -->
+          <div class="mt-4">
+            <button
+              @click="addParticular"
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              + Add New Row
+            </button>
+          </div>
+
+          <p class="mt-3 text-sm text-gray-600">
+            Add as many rows as needed. At least one row is required.
+          </p>
+        </div>
+
+        <!-- Cheque Details -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">
+            Cheque Details
+          </h3>
+          <div class="max-w-md">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Cheque Number</label
+              >
+              <input
+                v-model="formData.chequeNumber"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter cheque number"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Authorization Section -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">
+            Authorization
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <div class="border rounded-lg p-4">
+              <p class="text-sm text-gray-600 mb-2">Sig. of Dealing Asst.</p>
+              <div class="border-t border-gray-300 mt-8 pt-2">
+                <p class="text-xs text-gray-500">Signature</p>
+              </div>
+            </div>
+            <div class="border rounded-lg p-4">
+              <p class="text-sm text-gray-600 mb-2">Sig. of Accountant</p>
+              <div class="border-t border-gray-300 mt-8 pt-2">
+                <p class="text-xs text-gray-500">Signature</p>
+              </div>
+            </div>
+            <div class="border rounded-lg p-4">
+              <p class="text-sm text-gray-600 mb-2">Secretary Trust</p>
+              <div class="border-t border-gray-300 mt-8 pt-2">
+                <p class="text-xs text-gray-500">Signature</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            @click="generatePreview"
+            class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Preview Document
+          </button>
+          <button
+            @click="generateDocx"
+            class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Generate DOCX
+          </button>
+          <button
+            @click="clearForm"
+            class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Clear Form
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Modal -->
+      <div
+        v-if="showPreview"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      >
+        <div
+          class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto"
+        >
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Document Preview</h2>
+              <button
+                @click="showPreview = false"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <div
+              v-html="previewContent"
+              class="border p-4 bg-white text-sm"
+            ></div>
+            <div class="mt-4 flex justify-end">
+              <button
+                @click="generateDocx"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
+              >
+                Download DOCX
+              </button>
+              <button
+                @click="showPreview = false"
+                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          showPreview: false,
+          previewContent: "",
+          issuedDateManuallyChanged: false,
+          isAutoSyncingDate: false,
+          formData: {
+            date: new Date().toISOString().split("T")[0],
+            payeeName: "Yourself",
+            purpose: "",
+
+            issuedLetterNo: "",
+            issuedLetterDate: new Date().toISOString().split("T")[0],
+            chequeNumber: "",
+            particulars: [
+              {
+                description: "",
+                amount: 0,
+              },
+            ],
+          },
+        },
+        computed: {
+          particularsTotal() {
+            return this.formData.particulars.reduce(
+              (sum, item) => sum + (item.amount || 0),
+              0
+            );
+          },
+          formattedPurpose() {
+            let result =
+              "RTGS in favour of employee & their legal heirs listed below towards CPF Final Payment on Demise, Retirement & Resignation with interest to their SB a/c";
+
+            // Add issued letter info if provided
+            if (
+              this.formData.issuedLetterNo &&
+              this.formData.issuedLetterDate
+            ) {
+              const issuedDate = new Date(this.formData.issuedLetterDate);
+              const formattedIssuedDate = issuedDate
+                .toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+                .replace(/\//g, ".");
+              result += ` issued vide letter no. ${this.formData.issuedLetterNo} dt ${formattedIssuedDate}.`;
+            }
+
+            return result;
+          },
+        },
+        watch: {
+          // Sync issued vide letter date with main document date
+          "formData.date"(newDate) {
+            // Only auto-sync if issued date hasn't been manually changed
+            if (!this.issuedDateManuallyChanged) {
+              this.isAutoSyncingDate = true;
+              this.formData.issuedLetterDate = newDate;
+              this.$nextTick(() => {
+                this.isAutoSyncingDate = false;
+              });
+            }
+          },
+          // Track if user manually changes the issued date
+          "formData.issuedLetterDate"() {
+            // Only mark as manually changed if it's not an automatic sync
+            if (!this.isAutoSyncingDate) {
+              this.issuedDateManuallyChanged = true;
+            }
+          },
+        },
+        filters: {
+          currency(value) {
+            if (!value) return "0.00";
+            return parseFloat(value).toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+          },
+        },
+        methods: {
+          resyncIssuedDate() {
+            this.issuedDateManuallyChanged = false;
+            this.isAutoSyncingDate = true;
+            this.formData.issuedLetterDate = this.formData.date;
+            this.$nextTick(() => {
+              this.isAutoSyncingDate = false;
+            });
+          },
+          // Convert number to words (Indian numbering system)
+          numberToWords(num) {
+            if (num === 0) return "ZERO";
+
+            const ones = [
+              "",
+              "ONE",
+              "TWO",
+              "THREE",
+              "FOUR",
+              "FIVE",
+              "SIX",
+              "SEVEN",
+              "EIGHT",
+              "NINE",
+              "TEN",
+              "ELEVEN",
+              "TWELVE",
+              "THIRTEEN",
+              "FOURTEEN",
+              "FIFTEEN",
+              "SIXTEEN",
+              "SEVENTEEN",
+              "EIGHTEEN",
+              "NINETEEN",
+            ];
+            const tens = [
+              "",
+              "",
+              "TWENTY",
+              "THIRTY",
+              "FORTY",
+              "FIFTY",
+              "SIXTY",
+              "SEVENTY",
+              "EIGHTY",
+              "NINETY",
+            ];
+
+            function convertHundreds(n) {
+              let result = "";
+              if (n >= 100) {
+                result += ones[Math.floor(n / 100)] + " HUNDRED ";
+                n %= 100;
+              }
+              if (n >= 20) {
+                result += tens[Math.floor(n / 10)] + " ";
+                n %= 10;
+              }
+              if (n > 0) {
+                result += ones[n] + " ";
+              }
+              return result.trim();
+            }
+
+            let crores = Math.floor(num / 10000000);
+            let lakhs = Math.floor((num % 10000000) / 100000);
+            let thousands = Math.floor((num % 100000) / 1000);
+            let hundreds = num % 1000;
+
+            let result = "";
+            if (crores > 0) result += convertHundreds(crores) + " CRORE ";
+            if (lakhs > 0) result += convertHundreds(lakhs) + " LAKH ";
+            if (thousands > 0)
+              result += convertHundreds(thousands) + " THOUSAND ";
+            if (hundreds > 0) result += convertHundreds(hundreds);
+
+            return result.trim() + " ONLY";
+          },
+
+          // Particulars management functions
+          addParticular() {
+            this.formData.particulars.push({
+              description: "",
+              amount: 0,
+            });
+          },
+          removeParticular(index) {
+            if (this.formData.particulars.length > 1) {
+              this.formData.particulars.splice(index, 1);
+            }
+          },
+          generatePreview() {
+            this.previewContent = this.createPreviewHTML();
+            this.showPreview = true;
+          },
+          createSimple6ColumnRows() {
+            // Filter to only show items with amounts > 0
+            const nonZeroParticulars = this.formData.particulars.filter(
+              (item) => item.amount > 0
+            );
+            let rows = "";
+
+            if (nonZeroParticulars.length === 0) {
+              // Show message when no items have amounts > 0
+              rows += `<tr>
+                <td style="border: 1px solid #000; padding: 5px; text-align: center;" colspan="6">
+                  <em>No items with amounts entered. Please enter amounts in the form above.</em>
+                </td>
+              </tr>`;
+            } else {
+              nonZeroParticulars.forEach((item, index) => {
+                rows += `<tr>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${
+                    index + 1
+                  }</td>
+                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${
+                    item.description
+                  }</td>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${(
+                    item.amount || 0
+                  ).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}</td>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;"></td>
+                  <td style="border: 1px solid #000; padding: 5px; width: 35%;"></td>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;"></td>
+                </tr>`;
+              });
+            }
+
+            // Add final total row with 4 columns
+            const totalAmount = this.particularsTotal.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+            rows += `<tr style="background-color: #f0f0f0; font-weight: bold;">
+              <td style="border: 1px solid #000; padding: 5px; width: 40%; text-align: center;" colspan="2">Total</td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${totalAmount}</td>
+              <td style="border: 1px solid #000; padding: 5px; width: 40%; text-align: center;" colspan="2">Total</td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${totalAmount}</td>
+            </tr>`;
+
+            return rows;
+          },
+          createDocxTableRows(docxClasses) {
+            const {
+              TableRow,
+              TableCell,
+              Paragraph,
+              TextRun,
+              AlignmentType,
+              WidthType,
+            } = docxClasses;
+            const rows = [];
+
+            // Filter items with amount > 0 (same as HTML preview)
+            const itemsWithAmount = this.formData.particulars.filter(
+              (item) => item.amount > 0
+            );
+
+            // Generate rows (one item per row, all on left side, right side empty)
+            for (let i = 0; i < itemsWithAmount.length; i++) {
+              const item = itemsWithAmount[i];
+
+              rows.push(
+                new TableRow({
+                  children: [
+                    // Left side - S.No.
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          children: [new TextRun((i + 1).toString())],
+                          alignment: AlignmentType.CENTER,
+                        }),
+                      ],
+                      width: { size: 5, type: WidthType.PERCENTAGE },
+                    }),
+                    // Left side - Particulars
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          children: [new TextRun(item.description)],
+                          spacing: {
+                            line: 240,
+                          },
+                        }),
+                      ],
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                    }),
+                    // Left side - Amount
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: item.amount.toLocaleString("en-IN", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }),
+                            }),
+                          ],
+                          alignment: AlignmentType.RIGHT,
+                        }),
+                      ],
+                      width: { size: 10, type: WidthType.PERCENTAGE },
+                    }),
+                    // Right side - S.No. (empty)
+                    new TableCell({
+                      children: [new Paragraph("")],
+                      width: { size: 5, type: WidthType.PERCENTAGE },
+                    }),
+                    // Right side - Particulars (empty)
+                    new TableCell({
+                      children: [new Paragraph("")],
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                    }),
+                    // Right side - Amount (empty)
+                    new TableCell({
+                      children: [new Paragraph("")],
+                      width: { size: 10, type: WidthType.PERCENTAGE },
+                    }),
+                  ],
+                })
+              );
+            }
+
+            return rows;
+          },
+          createPreviewHTML() {
+            return `
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="font-size: 18px; font-weight: bold; margin: 0;">U. P. Rajya Vidyut Utpadan Nigam Ltd.</h1>
+                            <p style="margin: 5px 0;">CONTRIBUTORY PROVIDENT FUND TRUST</p>
+                            <p style="font-weight: bold; margin: 10px 0;">PAYMENT AUTHORITY</p>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                             <div style="display: flex; justify-content: space-between; align-items: center;">
+                                 <p style="margin: 0;"><strong>Name of Payee:</strong> <u>Yourself</u></p>
+                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(
+                                   this.formData.date
+                                 )
+                                   .toLocaleDateString("en-GB", {
+                                     day: "2-digit",
+                                     month: "2-digit",
+                                     year: "numeric",
+                                   })
+                                   .replace(/\//g, ".")}</p>
+                             </div>
+                             <p style="text-align: justify;"><strong>Particulars of Payment:</strong> <u>${
+                               this.formattedPurpose
+                             }</u></p>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                             <div style="display: flex; align-items: baseline;">
+                                 <span style="font-weight: bold;">No of Bills/Demands attached</span>
+                                 <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 10px; margin-bottom: 2px;"></span>
+                             </div>
+                         </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <p style="font-weight: bold;">Amount: <u>${this.particularsTotal.toLocaleString(
+                              "en-IN",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}</u></p>
+                        </div>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                            <thead>
+                                <!-- Row 1: PARTICULARS headers -->
+                                <tr style="background-color: #f0f0f0;">
+                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">PARTICULARS</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">Amount Rs.</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">PARTICULARS</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">Amount Rs.</th>
+                                </tr>
+                                <!-- Row 2: CPF/Bank info -->
+                                <tr style="background-color: #f0f0f0;">
+                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">CPF Advance A/c</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;"></th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">Bank A/c</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">${this.particularsTotal.toLocaleString(
+                                      "en-IN",
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      }
+                                    )}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${this.createSimple6ColumnRows()}
+                            </tbody>
+                        </table>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 33.33%; text-align: center; padding: 10px 0;">
+                                    <p style="margin: 0; margin-bottom: 10px;">Passed</p>
+                                </td>
+                                <td style="width: 33.33%; text-align: center; padding: 10px 0;">
+                                    <p style="margin: 0; margin-bottom: 10px;">Checked</p>
+                                </td>
+                                <td style="width: 33.34%; text-align: center; padding: 10px 0;">
+                                    <p style="margin: 0; margin-bottom: 10px;">Passed for Payment</p>
+                                </td>
+                                </tr>
+                            <tr>
+                                <td style="width: 33.33%; text-align: center; padding: 30px 0 10px 0;">
+                                    <p style="margin: 0;">_________________</p>
+                                    <p style="margin: 5px 0 0 0;">Sig. of Dealing Asst.</p>
+                                </td>
+                                <td style="width: 33.33%; text-align: center; padding: 30px 0 10px 0;">
+                                    <p style="margin: 0;">_________________</p>
+                                    <p style="margin: 5px 0 0 0;">Sig. of Accountant</p>
+                                </td>
+                                <td style="width: 33.34%; text-align: center; padding: 30px 0 10px 0;">
+                                    <p style="margin: 0;">_________________</p>
+                                    <p style="margin: 5px 0 0 0;">Secretary Trust</p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="margin-top: 30px; text-align: justify;">
+                            <p style="margin: 0; text-align: justify;">Please Pay Rs. <strong>${this.particularsTotal.toLocaleString(
+                              "en-IN",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )} (RS. ${this.numberToWords(
+              Math.floor(this.particularsTotal)
+            )})</strong> and <strong>Debit Trust A/c no.-1233789900</strong></p>
+                        </div>
+
+                        <div style="margin-top: 30px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="width: 50%; text-align: center; padding: 30px 10px; border-bottom: 1px solid #000;">
+                                        Accountant
+                                    </td>
+                                    <td style="width: 50%; text-align: center; padding: 30px 10px; border-bottom: 1px solid #000;">
+                                        Secretary Trust
+                                    </td>
+                                </tr>
+                            </table>
+                            </div>
+
+                        <div style="margin-top: 20px; text-align: left;">
+                            <p style="margin: 5px 0;">Paid by Cheque vide Cash book voucher No ___________date___________</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px 0;">
+                                <span>Cheque No- <strong>${
+                                  this.formData.chequeNumber || "_______"
+                                }</strong> Date- <strong>${new Date(
+              this.formData.date
+            )
+              .toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+              .replace(/\//g, ".")}</strong></span>
+                                <span>Sig. of Cashier</span>
+                            </div>
+                        </div>
+                    `;
+          },
+          async generateDocx() {
+            try {
+              // Check if docx is available (try multiple ways)
+              console.log("Attempting to generate DOCX...");
+              console.log("window.docx:", typeof window.docx);
+              console.log("global docx:", typeof docx);
+
+              let docxLib;
+              if (typeof window.docx !== "undefined") {
+                docxLib = window.docx;
+              } else if (typeof docx !== "undefined") {
+                docxLib = docx;
+              } else {
+                throw new Error(
+                  "DOCX library not loaded. Please refresh the page and try again."
+                );
+              }
+
+              const {
+                Document,
+                Packer,
+                Paragraph,
+                TextRun,
+                Table,
+                TableRow,
+                TableCell,
+                AlignmentType,
+                WidthType,
+                BorderStyle,
+              } = docxLib;
+
+              const doc = new Document({
+                styles: {
+                  default: {
+                    document: {
+                      run: {
+                        font: "Arial",
+                      },
+                    },
+                  },
+                },
+                sections: [
+                  {
+                    properties: {
+                      page: {
+                        margin: {
+                          top: 720,
+                          right: 720,
+                          bottom: 720,
+                          left: 720,
+                        },
+                      },
+                    },
+                    children: [
+                      // Header
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "U. P. Rajya Vidyut Utpadan Nigam Ltd.",
+                            bold: true,
+                            size: 28,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "CONTRIBUTORY PROVIDENT FUND TRUST",
+                            size: 24,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "PAYMENT AUTHORITY",
+                            bold: true,
+                            size: 26,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph(""),
+
+                      // Payee details with date on same line using table
+                      new Table({
+                        width: {
+                          size: 100,
+                          type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                          top: { style: BorderStyle.NONE },
+                          bottom: { style: BorderStyle.NONE },
+                          left: { style: BorderStyle.NONE },
+                          right: { style: BorderStyle.NONE },
+                          insideHorizontal: { style: BorderStyle.NONE },
+                          insideVertical: { style: BorderStyle.NONE },
+                        },
+                        rows: [
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Name of Payee: ",
+                                        bold: true,
+                                      }),
+                                      new TextRun({
+                                        text: "Yourself",
+                                        underline: {},
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                                width: {
+                                  size: 70,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: BorderStyle.NONE },
+                                  bottom: { style: BorderStyle.NONE },
+                                  left: { style: BorderStyle.NONE },
+                                  right: { style: BorderStyle.NONE },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Date: ",
+                                        bold: true,
+                                      }),
+                                      new TextRun({
+                                        text: new Date(this.formData.date)
+                                          .toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                          })
+                                          .replace(/\//g, "."),
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.RIGHT,
+                                  }),
+                                ],
+                                width: {
+                                  size: 30,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: BorderStyle.NONE },
+                                  bottom: { style: BorderStyle.NONE },
+                                  left: { style: BorderStyle.NONE },
+                                  right: { style: BorderStyle.NONE },
+                                },
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Particulars of Payment: ",
+                            bold: true,
+                          }),
+                          new TextRun({
+                            text: this.formattedPurpose,
+                            underline: {},
+                          }),
+                        ],
+                        alignment: AlignmentType.JUSTIFIED,
+                      }),
+                      new Paragraph(""),
+
+                      // Bills/Demands attached
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "No of Bills/Demands attached ",
+                            bold: true,
+                            font: "Arial",
+                          }),
+                          new TextRun({
+                            text: "_".repeat(20),
+                            font: "Arial",
+                          }),
+                        ],
+                      }),
+                      new Paragraph(""),
+
+                      // Amount
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Amount: ",
+                            bold: true,
+                            size: 24,
+                          }),
+                          new TextRun({
+                            text: this.particularsTotal.toLocaleString(
+                              "en-IN",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            ),
+                            bold: true,
+                            size: 24,
+                            underline: {},
+                          }),
+                        ],
+                      }),
+                      new Paragraph(""),
+
+                      // Particulars table
+                      new Table({
+                        width: {
+                          size: 100,
+                          type: WidthType.PERCENTAGE,
+                        },
+                        tableLayout: "fixed",
+                        rows: [
+                          // Header row 1
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "PARTICULARS",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                columnSpan: 2,
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Amount Rs.",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "PARTICULARS",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                columnSpan: 2,
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Amount Rs.",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                            ],
+                          }),
+                          // Header row 2
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "CPF Advance A/c",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                columnSpan: 2,
+                              }),
+                              new TableCell({
+                                children: [new Paragraph("")],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Bank A/c",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                columnSpan: 2,
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: this.particularsTotal.toLocaleString(
+                                          "en-IN",
+                                          {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                          }
+                                        ),
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                            ],
+                          }),
+                          // Data rows (6 columns)
+                          ...this.createDocxTableRows({
+                            TableRow,
+                            TableCell,
+                            Paragraph,
+                            TextRun,
+                            AlignmentType,
+                            WidthType,
+                          }),
+                          // Final total row
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Total",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                columnSpan: 2,
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: this.particularsTotal.toLocaleString(
+                                          "en-IN",
+                                          {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                          }
+                                        ),
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Total",
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                columnSpan: 2,
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: this.particularsTotal.toLocaleString(
+                                          "en-IN",
+                                          {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                          }
+                                        ),
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new Paragraph(""),
+
+                      // Payment status and Signatures (borderless table for proper alignment)
+                      new Table({
+                        width: {
+                          size: 100,
+                          type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                          top: { style: "none" },
+                          bottom: { style: "none" },
+                          left: { style: "none" },
+                          right: { style: "none" },
+                          insideHorizontal: { style: "none" },
+                          insideVertical: { style: "none" },
+                        },
+                        rows: [
+                          // First row: Payment status
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun("Passed")],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: {
+                                  size: 33.33,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun("Checked")],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: {
+                                  size: 33.33,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun("Passed for Payment"),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: {
+                                  size: 33.34,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                            ],
+                          }),
+                          // Second row: Signatures with space above
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun("_________________"),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun("Sig. of Dealing Asst."),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                  new Paragraph(""),
+                                ],
+                                width: {
+                                  size: 33.33,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun("_________________"),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun("Sig. of Accountant"),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                  new Paragraph(""),
+                                ],
+                                width: {
+                                  size: 33.33,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun("_________________"),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                  new Paragraph({
+                                    children: [new TextRun("Secretary Trust")],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                  new Paragraph(""),
+                                ],
+                                width: {
+                                  size: 33.34,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new Paragraph(""),
+
+                      // Payment instruction
+                      new Paragraph({
+                        children: [
+                          new TextRun("Please Pay Rs. "),
+                          new TextRun({
+                            text: `${this.particularsTotal.toLocaleString(
+                              "en-IN",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )} (RS. ${this.numberToWords(
+                              Math.floor(this.particularsTotal)
+                            )})`,
+                            bold: true,
+                          }),
+                          new TextRun(" and "),
+                          new TextRun({
+                            text: "Debit Trust A/c no.-1233789900",
+                            bold: true,
+                          }),
+                        ],
+                        alignment: AlignmentType.JUSTIFIED,
+                      }),
+                      new Paragraph(""),
+
+                      // Accountant and Secretary Trust line (borderless table for proper alignment)
+                      new Table({
+                        width: {
+                          size: 100,
+                          type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                          top: { style: "none" },
+                          bottom: { style: "none" },
+                          left: { style: "none" },
+                          right: { style: "none" },
+                          insideHorizontal: { style: "none" },
+                          insideVertical: { style: "none" },
+                        },
+                        rows: [
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph({
+                                    children: [new TextRun("Accountant")],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: {
+                                  size: 50,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph(""),
+                                  new Paragraph(""),
+                                  new Paragraph({
+                                    children: [new TextRun("Secretary Trust")],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: {
+                                  size: 50,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new Paragraph(""),
+
+                      // Cheque payment details
+                      new Paragraph({
+                        children: [
+                          new TextRun(
+                            "Paid by Cheque vide Cash book voucher No ___________date___________"
+                          ),
+                        ],
+                        alignment: AlignmentType.LEFT,
+                      }),
+                      new Table({
+                        width: {
+                          size: 100,
+                          type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                          top: { style: "none" },
+                          bottom: { style: "none" },
+                          left: { style: "none" },
+                          right: { style: "none" },
+                          insideHorizontal: { style: "none" },
+                          insideVertical: { style: "none" },
+                        },
+                        rows: [
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Cheque No- ",
+                                        font: "Arial",
+                                      }),
+                                      new TextRun({
+                                        text:
+                                          this.formData.chequeNumber ||
+                                          "_______",
+                                        bold: true,
+                                        font: "Arial",
+                                      }),
+                                      new TextRun({
+                                        text: " Date- ",
+                                        font: "Arial",
+                                      }),
+                                      new TextRun({
+                                        text: new Date(this.formData.date)
+                                          .toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                          })
+                                          .replace(/\//g, "."),
+                                        bold: true,
+                                        font: "Arial",
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.LEFT,
+                                  }),
+                                ],
+                                width: {
+                                  size: 70,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "Sig. of Cashier",
+                                        font: "Arial",
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.RIGHT,
+                                  }),
+                                ],
+                                width: {
+                                  size: 30,
+                                  type: WidthType.PERCENTAGE,
+                                },
+                                borders: {
+                                  top: { style: "none" },
+                                  bottom: { style: "none" },
+                                  left: { style: "none" },
+                                  right: { style: "none" },
+                                },
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new Paragraph(""),
+                      new Paragraph(""),
+                      new Paragraph(""),
+                    ],
+                  },
+                ],
+              });
+
+              const blob = await Packer.toBlob(doc);
+              // Generate dynamic filename based on selected date (e.g., "EDLI August 2025")
+              const dateObj = new Date(this.formData.date);
+              const monthName = dateObj.toLocaleDateString("en-US", {
+                month: "long",
+              });
+              const year = dateObj.getFullYear();
+              const fileName = `Final Payment ${monthName} ${year}.docx`;
+              saveAs(blob, fileName);
+
+              alert("Final Payment DOCX file generated successfully!");
+            } catch (error) {
+              console.error("Error generating DOCX:", error);
+              alert(
+                "Error generating DOCX file. Please check the console for details."
+              );
+            }
+          },
+          clearForm() {
+            if (confirm("Are you sure you want to clear all form data?")) {
+              this.issuedDateManuallyChanged = false;
+              this.isAutoSyncingDate = false;
+              this.formData = {
+                date: new Date().toISOString().split("T")[0],
+                payeeName: "Yourself",
+                purpose: "",
+
+                issuedLetterNo: "",
+                issuedLetterDate: new Date().toISOString().split("T")[0],
+                chequeNumber: "",
+                particulars: [
+                  {
+                    description: "",
+                    amount: 0,
+                  },
+                ],
+              };
+            }
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
