@@ -200,7 +200,7 @@
           </h3>
           <div class="bg-gray-50 p-4 rounded-lg">
             <div class="text-lg font-semibold text-gray-800">
-              Amount: {{ particularsTotal.toLocaleString('en-IN', {
+              Amount: ₹ {{ particularsTotal.toLocaleString('en-IN', {
               minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
             </div>
           </div>
@@ -959,7 +959,7 @@
                          </div>
 
                         <div style="margin-bottom: 15px;">
-                            <p style="font-weight: bold;">Amount: <u>${this.particularsTotal.toLocaleString(
+                            <p style="font-weight: bold;">Amount: ₹ <u>${this.particularsTotal.toLocaleString(
                               "en-IN",
                               {
                                 minimumFractionDigits: 2,
@@ -1338,7 +1338,7 @@
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "Amount: ",
+                            text: "Amount: ₹ ",
                             bold: true,
                             size: 24,
                           }),
