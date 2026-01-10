@@ -86,7 +86,7 @@
         <div class="mb-6">
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-lg font-semibold text-gray-700">Bank Account Details</h3>
-            <button @click="addAccount" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">+ Add Account</button>
+            <span class="text-sm text-gray-600">Enter amounts for the accounts below (all 14 accounts are pre-populated)</span>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse border border-gray-300 text-sm">
@@ -99,32 +99,18 @@
                   <th class="border border-gray-300 px-2 py-2 text-left w-24">Type of A/c</th>
                   <th class="border border-gray-300 px-2 py-2 text-left">IFSC Code</th>
                   <th class="border border-gray-300 px-2 py-2 text-left w-32">Amount</th>
-                  <th class="border border-gray-300 px-2 py-2 text-center w-16">Action</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(account, index) in formData.accounts" :key="index" class="hover:bg-gray-50">
                   <td class="border border-gray-300 px-2 py-2 text-center">{{ index + 1 }}</td>
+                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.name }}</td>
+                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.bank }}</td>
+                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.accountNo }}</td>
+                  <td class="border border-gray-300 px-2 py-2 text-center text-sm">{{ account.accountType }}</td>
+                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.ifsc }}</td>
                   <td class="border border-gray-300 px-2 py-2">
-                    <input v-model="account.name" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Account name" />
-                  </td>
-                  <td class="border border-gray-300 px-2 py-2">
-                    <input v-model="account.bank" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Bank name" />
-                  </td>
-                  <td class="border border-gray-300 px-2 py-2">
-                    <input v-model="account.accountNo" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Account no" />
-                  </td>
-                  <td class="border border-gray-300 px-2 py-2">
-                    <input v-model="account.accountType" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="C/A" />
-                  </td>
-                  <td class="border border-gray-300 px-2 py-2">
-                    <input v-model="account.ifsc" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="IFSC code" />
-                  </td>
-                  <td class="border border-gray-300 px-2 py-2">
-                    <input v-model.number="account.amount" type="number" step="0.01" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="0.00" />
-                  </td>
-                  <td class="border border-gray-300 px-2 py-2 text-center">
-                    <button @click="removeAccount(index)" class="text-red-600 hover:text-red-800 text-sm px-2 py-1" title="Remove">✕</button>
+                    <input v-model.number="account.amount" type="number" step="0.01" class="w-full px-2 py-1 border border-gray-300 bg-white focus:outline-none focus:border focus:border-blue-500 rounded text-sm" placeholder="0.00" />
                   </td>
                 </tr>
               </tbody>
@@ -132,7 +118,6 @@
                 <tr class="bg-gray-100 font-semibold">
                   <td class="border border-gray-300 px-2 py-2 text-right" colspan="6">Total</td>
                   <td class="border border-gray-300 px-2 py-2">{{ accountsTotal | currency }}</td>
-                  <td class="border border-gray-300 px-2 py-2"></td>
                 </tr>
               </tfoot>
             </table>
@@ -158,7 +143,7 @@
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <button @click="generatePreview" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">Preview Document</button>
           <button @click="generateDocx" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Generate DOCX</button>
-          <button @click="clearForm" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">Clear Form</button>
+          <button @click="clearForm" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">Clear Amounts</button>
         </div>
       </div>
 
@@ -190,6 +175,7 @@
         data: {
           showPreview: false,
           previewContent: "",
+          isAutoSyncingChequeDate: false,
           formData: {
             letterNo: "Sec/UNL/CPF Trust/",
             date: new Date().toISOString().split("T")[0],
@@ -207,7 +193,111 @@
                 accountNo: "10101987768",
                 accountType: "C/A/c",
                 ifsc: "SBIN0003347",
-                amount: 2375000.0,
+                amount: 0,
+              },
+              {
+                name: "UP Jal Vidyut Nigam Ltd",
+                bank: "State Bank of India, Panki",
+                accountNo: "42133266785",
+                accountType: "C/A/c",
+                ifsc: "SBIN0011607",
+                amount: 0,
+              },
+              {
+                name: "Dy CAO, P&AD, OTPS, Obra",
+                bank: "Indian Bank Obra",
+                accountNo: "20489383973",
+                accountType: "C/A/c",
+                ifsc: "IDIB000O501",
+                amount: 0,
+              },
+              {
+                name: "CFA&BO, CTPS, Obra",
+                bank: "HDFC Bank",
+                accountNo: "50200025132408",
+                accountType: "C/A/c",
+                ifsc: "HDFC0002358",
+                amount: 0,
+              },
+              {
+                name: 'Dy CAO, CFA&BO, Anpara "A"TPS',
+                bank: "State Bank of India",
+                accountNo: "10722279089",
+                accountType: "C/A/c",
+                ifsc: "SBIN0006339",
+                amount: 0,
+              },
+              {
+                name: 'Dy CAO, CFA&BO, Anpara "B"TPS',
+                bank: "State Bank of India, Anpara",
+                accountNo: "10722279192",
+                accountType: "C/A/c",
+                ifsc: "SBIN0006339",
+                amount: 0,
+              },
+              {
+                name: 'DGM(F), Constn. Unit CFA&BO, Anpara "D"TPP',
+                bank: "State Bank of India, Anpara",
+                accountNo: "30299251267",
+                accountType: "C/A/c",
+                ifsc: "SBIN0006339",
+                amount: 0,
+              },
+              {
+                name: "SAO, EPAD, UPRVUNL, Harduaganj O&M Kasimpur",
+                bank: "State Bank Of India",
+                accountNo: "11264105070",
+                accountType: "C/A/c",
+                ifsc: "SBIN0001364",
+                amount: 0,
+              },
+              {
+                name: "SAO, EPAD, UPRVUNL, Harduaganj Extn Kasimpur",
+                bank: "State Bank Of India",
+                accountNo: "11264105149",
+                accountType: "C/A/c",
+                ifsc: "SBIN0001364",
+                amount: 0,
+              },
+              {
+                name: "CFA & BO, 1x660, Harduaganj, Kasimpur",
+                bank: "State Bank Of India",
+                accountNo: "33978063601",
+                accountType: "C/A/c",
+                ifsc: "SBIN0001364",
+                amount: 0,
+              },
+              {
+                name: "CFA & BO, 2x210, Parichha Jhansi",
+                bank: "State Bank of India, Parichha",
+                accountNo: "10653208048",
+                accountType: "C/A/c",
+                ifsc: "SBIN0006149",
+                amount: 0,
+              },
+              {
+                name: "CFA & BO, 2x250, Parichha Jhansi",
+                bank: "State Bank of India, Parichha",
+                accountNo: "31411639473",
+                accountType: "C/A/c",
+                ifsc: "SBIN0006149",
+                amount: 0,
+              },
+              {
+                name: "CFA & BO, JVUNL",
+                bank: "Punjab National Bank",
+                accountNo: "2789002100007763",
+                accountType: "C/A/c",
+                ifsc: "PUNB0364300",
+                amount: 0,
+              },
+              {
+                name: "EE,HOPS,OBRA",
+                bank: "State Bank of India,",
+                accountNo: "10699044299",
+                accountType: "C/A/c",
+                ifsc: "SBIN0001241",
+                amount: 0,
               },
             ],
           },
@@ -218,6 +308,16 @@
           },
           amountInWords() {
             return this.numberToWords(Math.floor(this.accountsTotal));
+          },
+        },
+        watch: {
+          // One-way sync: when top date changes, update cheque date
+          "formData.date"(newDate) {
+            this.isAutoSyncingChequeDate = true;
+            this.formData.chequeDate = newDate;
+            this.$nextTick(() => {
+              this.isAutoSyncingChequeDate = false;
+            });
           },
         },
         filters: {
@@ -293,28 +393,52 @@
             }
           },
           generatePreview() {
+            // Check if there are any accounts with amounts > 0
+            const hasAmounts = this.formData.accounts.some((acc) => acc.amount > 0);
+            if (!hasAmounts) {
+              if (confirm("No amounts have been entered yet. Do you still want to see the preview?")) {
+                this.previewContent = this.createPreviewHTML();
+                this.showPreview = true;
+              }
+              return;
+            }
+
             this.previewContent = this.createPreviewHTML();
             this.showPreview = true;
           },
           createPreviewHTML() {
-            const accountRows = this.formData.accounts
-              .map(
-                (acc, index) => `
-              <tr>
-                <td style="border: 1px solid #000; padding: 5px; text-align: center;">${index + 1}</td>
-                <td style="border: 1px solid #000; padding: 5px;">${acc.name}</td>
-                <td style="border: 1px solid #000; padding: 5px;">${acc.bank}</td>
-                <td style="border: 1px solid #000; padding: 5px;">${acc.accountNo}</td>
-                <td style="border: 1px solid #000; padding: 5px; text-align: center;">${acc.accountType}</td>
-                <td style="border: 1px solid #000; padding: 5px;">${acc.ifsc}</td>
-                <td style="border: 1px solid #000; padding: 5px; text-align: right;">${(acc.amount || 0).toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}</td>
-              </tr>
-            `
-              )
-              .join("");
+            // Filter out accounts with 0 amounts
+            const nonZeroAccounts = this.formData.accounts.filter((acc) => acc.amount > 0);
+
+            let accountRows = "";
+            if (nonZeroAccounts.length === 0) {
+              accountRows = `
+                <tr>
+                  <td colspan="7" style="border: 1px solid #000; padding: 15px; text-align: center;">
+                    <em>No accounts with amounts entered. Please enter amounts in the form above.</em>
+                  </td>
+                </tr>
+              `;
+            } else {
+              accountRows = nonZeroAccounts
+                .map(
+                  (acc, index) => `
+                <tr>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: center;">${index + 1}</td>
+                  <td style="border: 1px solid #000; padding: 5px;">${acc.name}</td>
+                  <td style="border: 1px solid #000; padding: 5px;">${acc.bank}</td>
+                  <td style="border: 1px solid #000; padding: 5px;">${acc.accountNo}</td>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: center;">${acc.accountType}</td>
+                  <td style="border: 1px solid #000; padding: 5px;">${acc.ifsc}</td>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${(acc.amount || 0).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}</td>
+                </tr>
+              `
+                )
+                .join("");
+            }
 
             return `
               <div style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; font-size: 14px;">
@@ -337,10 +461,13 @@
                   </div>
                 </div>
 
+                <!-- Separator Line -->
+                <div style="border-bottom: 1px solid #000000; margin: 10px 0 20px 0;"></div>
+
                 <!-- Letter Number and Date -->
                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                   <div><strong>NO. ${this.formData.letterNo}</strong></div>
-                  <div><strong>dated: ${this.formatDate(this.formData.date)}</strong></div>
+                  <div><strong>DATED: ${this.formatDate(this.formData.date)}</strong></div>
                 </div>
 
                 <!-- Recipient -->
@@ -415,6 +542,13 @@
           },
           async generateDocx() {
             try {
+              // Check if there are any accounts with amounts > 0
+              const hasAmounts = this.formData.accounts.some((acc) => acc.amount > 0);
+              if (!hasAmounts) {
+                alert("Please enter at least one account amount before generating the document.");
+                return;
+              }
+
               console.log("Attempting to generate DOCX...");
 
               let docxLib;
@@ -428,8 +562,11 @@
 
               const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, HeadingLevel, UnderlineType } = docxLib;
 
+              // Filter out accounts with 0 amounts
+              const nonZeroAccounts = this.formData.accounts.filter((acc) => acc.amount > 0);
+
               // Create account table rows
-              const accountTableRows = this.formData.accounts.map(
+              const accountTableRows = nonZeroAccounts.map(
                 (acc, index) =>
                   new TableRow({
                     children: [
@@ -602,6 +739,20 @@
                       }),
                       new Paragraph(""),
 
+                      // Separator Line
+                      new Paragraph({
+                        children: [new TextRun("")],
+                        border: {
+                          bottom: {
+                            color: "000000",
+                            space: 1,
+                            style: BorderStyle.SINGLE,
+                            size: 6,
+                          },
+                        },
+                      }),
+                      new Paragraph(""),
+
                       // Letter No and Date
                       new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -640,7 +791,7 @@
                                   new Paragraph({
                                     children: [
                                       new TextRun({
-                                        text: `dated: ${this.formatDate(this.formData.date)}`,
+                                        text: `DATED: ${this.formatDate(this.formData.date)}`,
                                         bold: true,
                                       }),
                                     ],
@@ -849,28 +1000,14 @@
             }
           },
           clearForm() {
-            if (confirm("Are you sure you want to clear all form data?")) {
-              this.formData = {
-                letterNo: "Sec/UNL/CPF Trust/",
-                date: new Date().toISOString().split("T")[0],
-                recipientDesignation: "The Branch Manager",
-                bankName: "Central Bank of India",
-                branchAddress: "Joppling Road Br, Lucknow",
-                cbiAccountNo: "1233789900",
-                panNo: "AAATU2424L",
-                chequeNo: "",
-                chequeDate: new Date().toISOString().split("T")[0],
-                accounts: [
-                  {
-                    name: "",
-                    bank: "",
-                    accountNo: "",
-                    accountType: "C/A/c",
-                    ifsc: "",
-                    amount: 0,
-                  },
-                ],
-              };
+            if (confirm("Are you sure you want to clear all amounts?")) {
+              // Only clear the amounts, keep the account details
+              this.formData.accounts.forEach((account) => {
+                account.amount = 0;
+              });
+              this.formData.chequeNo = "";
+              this.formData.date = new Date().toISOString().split("T")[0];
+              this.formData.chequeDate = new Date().toISOString().split("T")[0];
             }
           },
         },
