@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bank Letter - UPPCL</title>
+    <title>Bank Letter - Transfer of Fund through RTGS - UPPCL</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,166 +20,136 @@
 
     <!-- FileSaver.js for downloading files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-    <!-- Debug script to check library loading -->
-    <script>
-      window.addEventListener("load", function () {
-        console.log("Window loaded. Checking for docx library...");
-        console.log("window.docx:", typeof window.docx);
-        console.log("window.Docx:", typeof window.Docx);
-        console.log("global docx:", typeof docx);
-        if (window.docx) {
-          console.log("DOCX library available via window.docx:", Object.keys(window.docx));
-        }
-        if (typeof docx !== "undefined") {
-          console.log("DOCX library available via global docx:", Object.keys(docx));
-        }
-      });
-    </script>
   </head>
   <body class="bg-gray-50 min-h-screen">
-    <div id="app" class="container mx-auto p-6 max-w-4xl">
+    <div id="app" class="container mx-auto p-6 max-w-6xl">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="text-center border-b pb-4">
-          <h1 class="text-2xl font-bold text-gray-800">U. P. Rajya Vidyut Utpadan Nigam CPF Trust</h1>
-          <p class="text-lg text-gray-600 mt-1">CONTRIBUTORY PROVIDENT FUND TRUST</p>
-          <p class="text-xl font-semibold text-gray-700 mt-2">PAYMENT AUTHORITY</p>
-          <div class="mt-3 text-right">
-            <label class="text-sm text-gray-600">Date:</label>
-            <input v-model="formData.date" type="date" class="ml-2 px-2 py-1 border rounded text-sm" />
-          </div>
+          <h1 class="text-2xl font-bold text-gray-800">Bank Letter Generator</h1>
+          <p class="text-lg text-gray-600 mt-1">Transfer of Fund through RTGS</p>
         </div>
       </div>
 
       <!-- Main Form -->
       <div class="bg-white rounded-lg shadow-md p-6">
-        <!-- Payee Details -->
+        <!-- Letter Details -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">Payee Details</h3>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-3">Particulars of Payment</label>
-
-            <!-- Default text display -->
-            <div class="bg-gray-50 p-3 rounded-md mb-4 text-sm text-gray-700 text-justify">CPF advance payment through RTGS to employee at Nigam Headquarter/project against demand raised by DDO vide letter no.</div>
-
-            <!-- Letter entries -->
-            <div class="space-y-3" id="letter-entries">
-              <div v-for="(letter, index) in formData.letters" :key="index" class="flex gap-3 items-center p-3 border border-gray-200 rounded-md bg-white">
-                <div class="flex-1">
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Letter No.</label>
-                  <input v-model="letter.number" type="text" class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="e.g., 1482" />
-                </div>
-                <div class="flex-1">
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Date</label>
-                  <input v-model="letter.date" type="date" class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                </div>
-                <div class="flex-shrink-0 mt-5">
-                  <button @click="removeLetter(index)" class="text-red-600 hover:text-red-800 text-sm px-2 py-1" title="Remove this letter">✕</button>
-                </div>
-              </div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Letter Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Letter No.</label>
+              <input v-model="formData.letterNo" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Sec/UNL/CPF Trust/" />
             </div>
-
-            <!-- Add new letter button -->
-            <button @click="addLetter" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">+ Add Letter</button>
-
-            <!-- Final letter info -->
-            <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Issued vide letter no.</label>
-              <div class="flex gap-3">
-                <input v-model="formData.issuedLetterNo" type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 967" />
-                <div class="flex-1 relative">
-                  <input v-model="formData.issuedLetterDate" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" :class="{ 'border-blue-400 bg-blue-50': !issuedDateManuallyChanged }" />
-                  <span v-if="!issuedDateManuallyChanged" class="absolute right-8 top-1/2 transform -translate-y-1/2 text-blue-500 text-xs" title="Synced with document date"> 🔗 </span>
-                  <button v-if="issuedDateManuallyChanged" @click="resyncIssuedDate" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 text-xs px-1" title="Re-sync with document date">🔄</button>
-                </div>
-              </div>
-              <p v-if="!issuedDateManuallyChanged" class="text-xs text-blue-600 mt-1">📅 Date synced with document date above. Change manually to override.</p>
-            </div>
-
-            <!-- Preview of formatted text -->
-            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <label class="block text-sm font-medium text-blue-800 mb-2">Preview:</label>
-              <div class="text-sm text-blue-700 text-justify">{{ formattedPurpose }}</div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input v-model="formData.date" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
         </div>
 
-        <!-- Amount Section -->
+        <!-- Recipient Details -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">Amount Details</h3>
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <div class="text-lg font-semibold text-gray-800">Amount: ₹ {{ particularsTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Recipient Details</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">To (Designation)</label>
+              <input v-model="formData.recipientDesignation" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., The Branch Manager" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+              <input v-model="formData.bankName" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Central Bank of India" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Branch Address</label>
+              <input v-model="formData.branchAddress" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Joppling Road Br, Lucknow" />
+            </div>
           </div>
         </div>
 
-        <!-- Payment Particulars -->
+        <!-- Letter Body -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">Payment Particulars</h3>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Letter Body</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">CBI Account Number</label>
+              <input v-model="formData.cbiAccountNo" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 1233789900" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
+              <input v-model="formData.panNo" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., AAATU2424L" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank Account Details Table -->
+        <div class="mb-6">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-semibold text-gray-700">Bank Account Details</h3>
+            <button @click="addAccount" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">+ Add Account</button>
+          </div>
           <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-gray-300">
+            <table class="w-full border-collapse border border-gray-300 text-sm">
               <thead>
                 <tr class="bg-gray-100">
-                  <th class="border border-gray-300 px-3 py-2 text-left w-16">S.No.</th>
-                  <th class="border border-gray-300 px-3 py-2 text-left">Particulars</th>
-                  <th class="border border-gray-300 px-3 py-2 text-left w-40">Amount (₹)</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left w-12">Sl. No.</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left">Name of Account</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left">Bank/Branch</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left">Account No.</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left w-24">Type of A/c</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left">IFSC Code</th>
+                  <th class="border border-gray-300 px-2 py-2 text-left w-32">Amount</th>
+                  <th class="border border-gray-300 px-2 py-2 text-center w-16">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in formData.particulars" :key="index" class="hover:bg-gray-50">
-                  <td class="border border-gray-300 px-3 py-2">{{ index + 1 }}</td>
-                  <td class="border border-gray-300 px-3 py-2">
-                    <input v-model="item.description" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded" placeholder="Enter description" />
+                <tr v-for="(account, index) in formData.accounts" :key="index" class="hover:bg-gray-50">
+                  <td class="border border-gray-300 px-2 py-2 text-center">{{ index + 1 }}</td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.name" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Account name" />
                   </td>
-                  <td class="border border-gray-300 px-3 py-2">
-                    <input v-model.number="item.amount" type="number" step="0.01" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded" placeholder="0.00" />
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.bank" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Bank name" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.accountNo" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Account no" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.accountType" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="C/A" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.ifsc" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="IFSC code" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model.number="account.amount" type="number" step="0.01" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="0.00" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2 text-center">
+                    <button @click="removeAccount(index)" class="text-red-600 hover:text-red-800 text-sm px-2 py-1" title="Remove">✕</button>
                   </td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr class="bg-gray-100 font-semibold">
-                  <td class="border border-gray-300 px-3 py-2" colspan="2">Total</td>
-                  <td class="border border-gray-300 px-3 py-2">₹ {{ particularsTotal | currency }}</td>
+                  <td class="border border-gray-300 px-2 py-2 text-right" colspan="6">Total</td>
+                  <td class="border border-gray-300 px-2 py-2">{{ accountsTotal | currency }}</td>
+                  <td class="border border-gray-300 px-2 py-2"></td>
                 </tr>
               </tfoot>
             </table>
           </div>
-          <!-- Static rows - no add button needed -->
-          <p class="mt-3 text-sm text-gray-600">All 15 payment categories are pre-loaded. Enter amounts as needed.</p>
         </div>
 
         <!-- Cheque Details -->
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-gray-700 mb-3">Cheque Details</h3>
-          <div class="max-w-md">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Cheque Number</label>
-              <input v-model="formData.chequeNumber" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter cheque number" />
+              <input v-model="formData.chequeNo" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 207798" />
             </div>
-          </div>
-        </div>
-
-        <!-- Authorization Section -->
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">Authorization</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div class="border rounded-lg p-4">
-              <p class="text-sm text-gray-600 mb-2">Sig. of Dealing Asst.</p>
-              <div class="border-t border-gray-300 mt-8 pt-2">
-                <p class="text-xs text-gray-500">Signature</p>
-              </div>
-            </div>
-            <div class="border rounded-lg p-4">
-              <p class="text-sm text-gray-600 mb-2">Sig. of Accountant</p>
-              <div class="border-t border-gray-300 mt-8 pt-2">
-                <p class="text-xs text-gray-500">Signature</p>
-              </div>
-            </div>
-            <div class="border rounded-lg p-4">
-              <p class="text-sm text-gray-600 mb-2">Secretary Trust</p>
-              <div class="border-t border-gray-300 mt-8 pt-2">
-                <p class="text-xs text-gray-500">Signature</p>
-              </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cheque Date</label>
+              <input v-model="formData.chequeDate" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
         </div>
@@ -194,7 +164,7 @@
 
       <!-- Preview Modal -->
       <div v-if="showPreview" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div class="bg-white rounded-lg max-w-6xl w-full max-h-screen overflow-y-auto">
           <div class="p-6">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-bold">Document Preview</h2>
@@ -220,139 +190,34 @@
         data: {
           showPreview: false,
           previewContent: "",
-          issuedDateManuallyChanged: false,
-          isAutoSyncingDate: false,
           formData: {
+            letterNo: "Sec/UNL/CPF Trust/",
             date: new Date().toISOString().split("T")[0],
-            payeeName: "Yourself",
-            purpose: "",
-            letters: [{ number: "", date: "" }],
-            issuedLetterNo: "",
-            issuedLetterDate: new Date().toISOString().split("T")[0],
-            chequeNumber: "",
-            particulars: [
+            recipientDesignation: "The Branch Manager",
+            bankName: "Central Bank of India",
+            branchAddress: "Joppling Road Br, Lucknow",
+            cbiAccountNo: "1233789900",
+            panNo: "AAATU2424L",
+            chequeNo: "207798",
+            chequeDate: new Date().toISOString().split("T")[0],
+            accounts: [
               {
-                description: "UP RAJYA VIDYUT UTPADAN NIGAM LTD.",
-                amount: 0,
-              },
-              {
-                description: "UP JAL VIDYUT NIGAM LTD.",
-                amount: 0,
-              },
-              {
-                description: "DY CAO, CFA&BO, PTPS, PANKI, KANPUR",
-                amount: 0,
-              },
-              {
-                description: "DY CAO, P&AD, OTPS, OBRA-'B'",
-                amount: 0,
-              },
-              {
-                description: "CFA&BO, CTPS, OBRA-'C'",
-                amount: 0,
-              },
-              {
-                description: "EE, HOPS, OBRA",
-                amount: 0,
-              },
-              {
-                description: "BY CAO, CFA&BO, ANPARA-'A'TPS",
-                amount: 0,
-              },
-              {
-                description: "DY CAO, CFA&BO, ANPARA-'B'TPS",
-                amount: 0,
-              },
-              {
-                description: "DGM(F), CONSTN. UNIT CFA&BO, ANPARA - DTPP",
-                amount: 0,
-              },
-              {
-                description: "SAO, EPAD, UPRVUNL, HARDUAGANJ EXTN., KASIMPUR",
-                amount: 0,
-              },
-              {
-                description: "SAO, EPAD, UPRVUNL, HARDUAGANJ O&M., KASIMPUR",
-                amount: 0,
-              },
-              {
-                description: "CFA&BO, 1X660, HARDUAGANJ, KASIMPUR",
-                amount: 0,
-              },
-              {
-                description: "CFA&BO, PARICHA 2X210, JHANSI",
-                amount: 0,
-              },
-              {
-                description: "CFA&BO, PARICHA 2X250, JHANSI",
-                amount: 0,
-              },
-              {
-                description: "CFA & BO, JVUNL",
-                amount: 0,
+                name: "UP Rajya Vidyut Utpadan Nigam Ltd",
+                bank: "State Bank Of India",
+                accountNo: "10101987768",
+                accountType: "C/A/c",
+                ifsc: "SBIN0003347",
+                amount: 2375000.0,
               },
             ],
           },
         },
         computed: {
-          particularsTotal() {
-            return this.formData.particulars.reduce((sum, item) => sum + (item.amount || 0), 0);
+          accountsTotal() {
+            return this.formData.accounts.reduce((sum, acc) => sum + (acc.amount || 0), 0);
           },
-          formattedPurpose() {
-            let baseText = "CPF advance payment through RTGS to employee at Nigam Headquarter/project against demand raised by DDO vide letter no. ";
-
-            // Format letters as "number DT. date"
-            const formattedLetters = this.formData.letters
-              .filter((letter) => letter.number && letter.date)
-              .map((letter) => {
-                const date = new Date(letter.date);
-                const formattedDate = date
-                  .toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
-                  .replace(/\//g, ".");
-                return `${letter.number} DT. ${formattedDate}`;
-              })
-              .join(", ");
-
-            let result = baseText + formattedLetters;
-
-            // Add issued letter info if provided
-            if (this.formData.issuedLetterNo && this.formData.issuedLetterDate) {
-              const issuedDate = new Date(this.formData.issuedLetterDate);
-              const formattedIssuedDate = issuedDate
-                .toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
-                .replace(/\//g, ".");
-              result += ` issued vide letter no. ${this.formData.issuedLetterNo} dt ${formattedIssuedDate}.`;
-            }
-
-            return result;
-          },
-        },
-        watch: {
-          // Sync issued vide letter date with main document date
-          "formData.date"(newDate) {
-            // Only auto-sync if issued date hasn't been manually changed
-            if (!this.issuedDateManuallyChanged) {
-              this.isAutoSyncingDate = true;
-              this.formData.issuedLetterDate = newDate;
-              this.$nextTick(() => {
-                this.isAutoSyncingDate = false;
-              });
-            }
-          },
-          // Track if user manually changes the issued date
-          "formData.issuedLetterDate"() {
-            // Only mark as manually changed if it's not an automatic sync
-            if (!this.isAutoSyncingDate) {
-              this.issuedDateManuallyChanged = true;
-            }
+          amountInWords() {
+            return this.numberToWords(Math.floor(this.accountsTotal));
           },
         },
         filters: {
@@ -365,15 +230,16 @@
           },
         },
         methods: {
-          resyncIssuedDate() {
-            this.issuedDateManuallyChanged = false;
-            this.isAutoSyncingDate = true;
-            this.formData.issuedLetterDate = this.formData.date;
-            this.$nextTick(() => {
-              this.isAutoSyncingDate = false;
-            });
+          formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date
+              .toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+              .replace(/\//g, "-");
           },
-          // Convert number to words (Indian numbering system)
           numberToWords(num) {
             if (num === 0) return "ZERO";
 
@@ -407,370 +273,149 @@
             if (thousands > 0) result += convertHundreds(thousands) + " THOUSAND ";
             if (hundreds > 0) result += convertHundreds(hundreds);
 
-            return result.trim() + " ONLY";
+            return result.trim();
           },
-          // Letter management functions
-          addLetter() {
-            this.formData.letters.push({ number: "", date: "" });
+          addAccount() {
+            this.formData.accounts.push({
+              name: "",
+              bank: "",
+              accountNo: "",
+              accountType: "C/A/c",
+              ifsc: "",
+              amount: 0,
+            });
           },
-          removeLetter(index) {
-            if (this.formData.letters.length > 1) {
-              this.formData.letters.splice(index, 1);
+          removeAccount(index) {
+            if (this.formData.accounts.length > 1) {
+              this.formData.accounts.splice(index, 1);
+            } else {
+              alert("At least one account is required.");
             }
           },
           generatePreview() {
             this.previewContent = this.createPreviewHTML();
             this.showPreview = true;
           },
-          createTableRows() {
-            // Left side particulars (items 1-12)
-            const leftParticulars = this.formData.particulars.slice(0, 12);
+          createPreviewHTML() {
+            const accountRows = this.formData.accounts
+              .map(
+                (acc, index) => `
+              <tr>
+                <td style="border: 1px solid #000; padding: 5px; text-align: center;">${index + 1}</td>
+                <td style="border: 1px solid #000; padding: 5px;">${acc.name}</td>
+                <td style="border: 1px solid #000; padding: 5px;">${acc.bank}</td>
+                <td style="border: 1px solid #000; padding: 5px;">${acc.accountNo}</td>
+                <td style="border: 1px solid #000; padding: 5px; text-align: center;">${acc.accountType}</td>
+                <td style="border: 1px solid #000; padding: 5px;">${acc.ifsc}</td>
+                <td style="border: 1px solid #000; padding: 5px; text-align: right;">${(acc.amount || 0).toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}</td>
+              </tr>
+            `
+              )
+              .join("");
 
-            let rows = "";
+            return `
+              <div style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; font-size: 14px;">
+                <!-- Header with Logo and Address -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <div style="display: flex; align-items: flex-start; justify-content: center; gap: 20px;">
+                    <div style="flex-shrink: 0; margin-top: 10px;">
+                      <div style="width: 80px; height: 80px; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 10px;">UPRVUNL</span>
+                      </div>
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                      <h2 style="margin: 0; font-size: 16px; font-weight: bold;">U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST.</h2>
+                      <p style="margin: 2px 0; font-size: 12px;">9th Floor, Shakti Bhawan Extn., Room No. 928</p>
+                      <p style="margin: 2px 0; font-size: 12px;">14-Ashok Marg, Lucknow - 226001</p>
+                      <p style="margin: 2px 0; font-size: 12px;">उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लि0 सी0पी0एफ0 ट्रस्ट,</p>
+                      <p style="margin: 2px 0; font-size: 12px;">9वीं तल, शक्ति भवन विस्तार, कक्ष संख्या – 928,</p>
+                      <p style="margin: 2px 0; font-size: 12px;">14. अशोक मार्ग, लखनऊ – 226 001</p>
+                    </div>
+                  </div>
+                </div>
 
-            // First row with numbered items
-            leftParticulars.forEach((item, index) => {
-              if (index === 0) {
-                // First row has "Bank A/c" on the right
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center;">${index + 1}</td>
-                            <td style="border: 1px solid #000; padding: 5px;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.$options.filters.currency(item.amount)}</td>
-                  <td style="border: 1px solid #000; padding: 5px;">Bank A/c</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.$options.filters.currency(this.particularsTotal)}</td>
-                </tr>`;
-              } else if (index === leftParticulars.length - 2) {
-                // Second to last row has "Total" on the right
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center;">${index + 1}</td>
-                            <td style="border: 1px solid #000; padding: 5px;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.$options.filters.currency(item.amount)}</td>
-                  <td style="border: 1px solid #000; padding: 5px; font-weight: bold;">Total</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; font-weight: bold;">${this.$options.filters.currency(this.particularsTotal)}</td>
-                </tr>`;
-              } else if (index === leftParticulars.length - 1) {
-                // Last row - Total on left, empty on right
-                rows += `<tr style="background-color: #f0f0f0; font-weight: bold;">
-                  <td style="border: 1px solid #000; padding: 5px;"></td>
-                  <td style="border: 1px solid #000; padding: 5px;">Total</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.$options.filters.currency(this.particularsTotal)}</td>
-                  <td style="border: 1px solid #000; padding: 5px;"></td>
-                  <td style="border: 1px solid #000; padding: 5px;"></td>
-                </tr>`;
-              } else {
-                // Regular rows
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center;">${index + 1}</td>
-                  <td style="border: 1px solid #000; padding: 5px;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.$options.filters.currency(item.amount)}</td>
-                  <td style="border: 1px solid #000; padding: 5px;"></td>
-                  <td style="border: 1px solid #000; padding: 5px;"></td>
-                </tr>`;
-              }
-            });
+                <!-- Letter Number and Date -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                  <div><strong>NO. ${this.formData.letterNo}</strong></div>
+                  <div><strong>dated: ${this.formatDate(this.formData.date)}</strong></div>
+                </div>
 
-            return rows;
-          },
-          createSimple6ColumnRows() {
-            const particulars = this.formData.particulars.slice(0, 15);
-            // Filter to only show items with amounts > 0
-            const nonZeroParticulars = particulars.filter((item) => item.amount > 0);
-            let rows = "";
+                <!-- Recipient -->
+                <div style="margin-bottom: 20px;">
+                  <p style="margin: 2px 0;">${this.formData.recipientDesignation},</p>
+                  <p style="margin: 2px 0;">${this.formData.bankName},</p>
+                  <p style="margin: 2px 0;">${this.formData.branchAddress}</p>
+                </div>
 
-            if (nonZeroParticulars.length === 0) {
-              // Show message when no items have amounts > 0
-              rows += `<tr>
-                <td style="border: 1px solid #000; padding: 5px; text-align: center;" colspan="6">
-                  <em>No items with amounts entered. Please enter amounts in the form above.</em>
-                </td>
-              </tr>`;
-            } else {
-              nonZeroParticulars.forEach((item, index) => {
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${index + 1}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${(item.amount || 0).toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;"></td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;"></td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;"></td>
-                </tr>`;
-              });
-            }
+                <!-- Subject -->
+                <div style="margin-bottom: 20px; text-align: center;">
+                  <p style="margin: 0;"><strong><u>Subject: Transfer of Fund through RTGS</u></strong></p>
+                </div>
 
-            // Add final total row with 4 columns
-            const totalAmount = this.particularsTotal.toLocaleString("en-IN", {
+                <!-- Body -->
+                <div style="margin-bottom: 20px; text-align: justify;">
+                  <p style="margin: 5px 0;">Dear Sir,</p>
+                  <p style="margin: 5px 0; text-indent: 50px;">
+                    You are aware that UPRVUNL CPF Trust remits the amount to the projects on their demand basically for the welfare of the employees. Accordingly, you are requested to kindly transfer Fund from our CBI A/c ${this.formData.cbiAccountNo} with PAN No. ${this.formData.panNo}, through RTGS to the transferee account as per detail given below:-
+                  </p>
+                </div>
+
+                <!-- Account Details Table -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px;">
+                  <thead>
+                    <tr style="background-color: #f0f0f0;">
+                      <th style="border: 1px solid #000; padding: 5px; text-align: center;">Sl.<br/>No.</th>
+                      <th style="border: 1px solid #000; padding: 5px;">Name of Account</th>
+                      <th style="border: 1px solid #000; padding: 5px;">Bank/ Branch</th>
+                      <th style="border: 1px solid #000; padding: 5px;">Account No.</th>
+                      <th style="border: 1px solid #000; padding: 5px;">Type<br/>of A/c</th>
+                      <th style="border: 1px solid #000; padding: 5px;">IFSC Code</th>
+                      <th style="border: 1px solid #000; padding: 5px;">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${accountRows}
+                    <tr style="background-color: #f0f0f0; font-weight: bold;">
+                      <td colspan="6" style="border: 1px solid #000; padding: 5px; text-align: right;">Total</td>
+                      <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.accountsTotal.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Cheque Details -->
+                <div style="margin-bottom: 20px; text-align: justify;">
+                  <p style="margin: 5px 0; text-indent: 50px;">
+                    Please find herewith Cheque No ${this.formData.chequeNo} dated ${this.formatDate(this.formData.chequeDate)} authorising for payment amounting Rs.${this.accountsTotal.toLocaleString("en-IN", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            });
-            rows += `<tr style="background-color: #f0f0f0; font-weight: bold;">
-              <td style="border: 1px solid #000; padding: 5px; width: 40%; text-align: center;" colspan="2">Total</td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${totalAmount}</td>
-              <td style="border: 1px solid #000; padding: 5px; width: 40%; text-align: center;" colspan="2">Total</td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${totalAmount}</td>
-            </tr>`;
+            })} <strong>(Rs. ${this.amountInWords} ONLY)</strong> as per table above for RTGS transfer at our projects.
+                  </p>
+                </div>
 
-            return rows;
-          },
-          createComplexTableRows() {
-            const leftParticulars = this.formData.particulars.slice(0, 12);
-            let rows = "";
+                <!-- Closing -->
+                <div style="margin-bottom: 20px;">
+                  <p style="margin: 5px 0;">Thanking You,</p>
+                  <p style="margin: 5px 0;">Encl. As Above.</p>
+                </div>
 
-            leftParticulars.forEach((item, index) => {
-              if (index === 0) {
-                // First data row - 6 columns, empty right side except last row
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${index + 1}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${this.$options.filters.currency(item.amount)}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 5%;"></td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;"></td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 10%;"></td>
-                </tr>`;
-              } else if (index === leftParticulars.length - 2) {
-                // Second to last row - has "Total" on right - 6 columns
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${index + 1}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${this.$options.filters.currency(item.amount)}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%; font-weight: bold;" colspan="2">Total</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 15%; font-weight: bold;">${this.$options.filters.currency(this.particularsTotal)}</td>
-                </tr>`;
-              } else if (index === leftParticulars.length - 1) {
-                // Last row - Total on left - 4 columns
-                rows += `<tr style="background-color: #f0f0f0; font-weight: bold;">
-                  <td style="border: 1px solid #000; padding: 5px;" colspan="2">Total</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right;">${this.$options.filters.currency(this.particularsTotal)}</td>
-                  <td style="border: 1px solid #000; padding: 5px;">Passed</td>
-                </tr>`;
-              } else {
-                // Regular rows - 6 columns
-                rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${index + 1}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${item.description}</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${this.$options.filters.currency(item.amount)}</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 5%;"></td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;"></td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 10%;"></td>
-                </tr>`;
-              }
-            });
-
-            return rows;
-          },
-          createDocxTableRows(docxClasses) {
-            const { TableRow, TableCell, Paragraph, TextRun, AlignmentType, WidthType } = docxClasses;
-            const rows = [];
-
-            // Filter items with amount > 0 (same as HTML preview)
-            const itemsWithAmount = this.formData.particulars.filter((item) => item.amount > 0);
-
-            // Generate rows (one item per row, all on left side, right side empty)
-            for (let i = 0; i < itemsWithAmount.length; i++) {
-              const item = itemsWithAmount[i];
-
-              rows.push(
-                new TableRow({
-                  children: [
-                    // Left side - S.No.
-                    new TableCell({
-                      children: [
-                        new Paragraph({
-                          children: [new TextRun((i + 1).toString())],
-                          alignment: AlignmentType.CENTER,
-                        }),
-                      ],
-                      width: { size: 5, type: WidthType.PERCENTAGE },
-                    }),
-                    // Left side - Particulars
-                    new TableCell({
-                      children: [
-                        new Paragraph({
-                          children: [new TextRun(item.description)],
-                          spacing: {
-                            line: 240,
-                          },
-                        }),
-                      ],
-                      width: { size: 30, type: WidthType.PERCENTAGE },
-                      margins: {
-                        top: 100,
-                        bottom: 100,
-                        left: 100,
-                        right: 100,
-                      },
-                    }),
-                    // Left side - Amount
-                    new TableCell({
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new TextRun({
-                              text: item.amount.toLocaleString("en-IN", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }),
-                            }),
-                          ],
-                          alignment: AlignmentType.RIGHT,
-                        }),
-                      ],
-                      width: { size: 10, type: WidthType.PERCENTAGE },
-                    }),
-                    // Right side - S.No. (empty)
-                    new TableCell({
-                      children: [new Paragraph("")],
-                      width: { size: 5, type: WidthType.PERCENTAGE },
-                    }),
-                    // Right side - Particulars (empty)
-                    new TableCell({
-                      children: [new Paragraph("")],
-                      width: { size: 30, type: WidthType.PERCENTAGE },
-                    }),
-                    // Right side - Amount (empty)
-                    new TableCell({
-                      children: [new Paragraph("")],
-                      width: { size: 10, type: WidthType.PERCENTAGE },
-                    }),
-                  ],
-                })
-              );
-            }
-
-            return rows;
-          },
-          createPreviewHTML() {
-            return `
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="font-size: 18px; font-weight: bold; margin: 0;">U. P. Rajya Vidyut Utpadan Nigam Ltd.</h1>
-                            <p style="margin: 5px 0;">CONTRIBUTORY PROVIDENT FUND TRUST</p>
-                            <p style="font-weight: bold; margin: 10px 0;">PAYMENT AUTHORITY</p>
-                        </div>
-
-                        <div style="margin-bottom: 15px;">
-                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                 <p style="margin: 0;"><strong>Name of Payee:</strong> <u>Yourself</u></p>
-                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(this.formData.date)
-                                   .toLocaleDateString("en-GB", {
-                                     day: "2-digit",
-                                     month: "2-digit",
-                                     year: "numeric",
-                                   })
-                                   .replace(/\//g, ".")}</p>
-                             </div>
-                             <p style="text-align: justify;"><strong>Particulars of Payment:</strong> <u>${this.formattedPurpose}</u></p>
-                        </div>
-
-                        <div style="margin-bottom: 15px;">
-                             <div style="display: flex; align-items: baseline;">
-                                 <span style="font-weight: bold;">No of Bills/Demands attached</span>
-                                 <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 10px; margin-bottom: 2px;"></span>
-                             </div>
-                         </div>
-
-                        <div style="margin-bottom: 15px;">
-                            <p style="font-weight: bold;">Amount: ₹ <u>${this.particularsTotal.toLocaleString("en-IN", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}</u></p>
-                        </div>
-
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-                            <thead>
-                                <!-- Row 1: PARTICULARS headers -->
-                                <tr style="background-color: #f0f0f0;">
-                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">PARTICULARS</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">Amount Rs.</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">PARTICULARS</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">Amount Rs.</th>
-                                </tr>
-                                <!-- Row 2: CPF/Bank info -->
-                                <tr style="background-color: #f0f0f0;">
-                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">CPF Advance A/c</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;"></th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">Bank A/c</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">${this.particularsTotal.toLocaleString("en-IN", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${this.createSimple6ColumnRows()}
-                            </tbody>
-                        </table>
-
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                            <tr>
-                                <td style="width: 33.33%; text-align: center; padding: 10px 0;">
-                                    <p style="margin: 0; margin-bottom: 10px;">Passed</p>
-                                </td>
-                                <td style="width: 33.33%; text-align: center; padding: 10px 0;">
-                                    <p style="margin: 0; margin-bottom: 10px;">Checked</p>
-                                </td>
-                                <td style="width: 33.34%; text-align: center; padding: 10px 0;">
-                                    <p style="margin: 0; margin-bottom: 10px;">Passed for Payment</p>
-                                </td>
-                                </tr>
-                            <tr>
-                                <td style="width: 33.33%; text-align: center; padding: 30px 0 10px 0;">
-                                    <p style="margin: 0;">_________________</p>
-                                    <p style="margin: 5px 0 0 0;">Sig. of Dealing Asst.</p>
-                                </td>
-                                <td style="width: 33.33%; text-align: center; padding: 30px 0 10px 0;">
-                                    <p style="margin: 0;">_________________</p>
-                                    <p style="margin: 5px 0 0 0;">Sig. of Accountant</p>
-                                </td>
-                                <td style="width: 33.34%; text-align: center; padding: 30px 0 10px 0;">
-                                    <p style="margin: 0;">_________________</p>
-                                    <p style="margin: 5px 0 0 0;">Secretary Trust</p>
-                                </td>
-                            </tr>
-                        </table>
-
-                        <div style="margin-top: 30px; text-align: justify;">
-                            <p style="margin: 0; text-align: justify;">Please Pay Rs. <strong>${this.particularsTotal.toLocaleString("en-IN", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} (RS. ${this.numberToWords(Math.floor(this.particularsTotal))})</strong> and <strong>Debit Trust A/c no.-1233789900</strong></p>
-                        </div>
-
-                        <div style="margin-top: 30px;">
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <tr>
-                                    <td style="width: 50%; text-align: center; padding: 30px 10px; border-bottom: 1px solid #000;">
-                                        Accountant
-                                    </td>
-                                    <td style="width: 50%; text-align: center; padding: 30px 10px; border-bottom: 1px solid #000;">
-                                        Secretary Trust
-                                    </td>
-                                </tr>
-                            </table>
-                            </div>
-
-                        <div style="margin-top: 20px; text-align: left;">
-                            <p style="margin: 5px 0;">Paid by Cheque vide Cash book voucher No ___________date___________</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px 0;">
-                                <span>Cheque No- <strong>${this.formData.chequeNumber || "_______"}</strong> Date- <strong>${new Date(this.formData.date)
-              .toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-              .replace(/\//g, ".")}</strong></span>
-                                <span>Sig. of Cashier</span>
-                            </div>
-                        </div>
-                    `;
+                <!-- Signature -->
+                <div style="text-align: right; margin-top: 60px;">
+                  <p style="margin: 0;">For UPRVUNL CPF TRUST</p>
+                  <p style="margin: 40px 0 5px 0;">(Pradeep Soni)</p>
+                  <p style="margin: 0;">Secretary (Trust)</p>
+                </div>
+              </div>
+            `;
           },
           async generateDocx() {
             try {
-              // Check if docx is available (try multiple ways)
               console.log("Attempting to generate DOCX...");
-              console.log("window.docx:", typeof window.docx);
-              console.log("global docx:", typeof docx);
 
               let docxLib;
               if (typeof window.docx !== "undefined") {
@@ -781,65 +426,93 @@
                 throw new Error("DOCX library not loaded. Please refresh the page and try again.");
               }
 
-              const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle } = docxLib;
+              const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, HeadingLevel, UnderlineType } = docxLib;
 
-              // Create table rows for particulars
-              const particularRows = this.formData.particulars.map(
-                (item, index) =>
+              // Create account table rows
+              const accountTableRows = this.formData.accounts.map(
+                (acc, index) =>
                   new TableRow({
                     children: [
                       new TableCell({
-                        children: [new Paragraph((index + 1).toString())],
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun((index + 1).toString())],
+                            alignment: AlignmentType.CENTER,
+                          }),
+                        ],
+                        width: { size: 5, type: WidthType.PERCENTAGE },
+                      }),
+                      new TableCell({
+                        children: [new Paragraph(acc.name || "")],
+                        width: { size: 20, type: WidthType.PERCENTAGE },
+                      }),
+                      new TableCell({
+                        children: [new Paragraph(acc.bank || "")],
+                        width: { size: 20, type: WidthType.PERCENTAGE },
+                      }),
+                      new TableCell({
+                        children: [new Paragraph(acc.accountNo || "")],
+                        width: { size: 15, type: WidthType.PERCENTAGE },
+                      }),
+                      new TableCell({
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun(acc.accountType || "")],
+                            alignment: AlignmentType.CENTER,
+                          }),
+                        ],
                         width: { size: 10, type: WidthType.PERCENTAGE },
                       }),
                       new TableCell({
-                        children: [new Paragraph(item.description)],
-                        width: { size: 70, type: WidthType.PERCENTAGE },
+                        children: [new Paragraph(acc.ifsc || "")],
+                        width: { size: 15, type: WidthType.PERCENTAGE },
                       }),
                       new TableCell({
                         children: [
                           new Paragraph({
                             children: [
-                              new TextRun("₹ "),
-                              new TextRun({
-                                text: this.$options.filters.currency(item.amount),
-                                underline: {},
-                              }),
+                              new TextRun(
+                                (acc.amount || 0).toLocaleString("en-IN", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })
+                              ),
                             ],
+                            alignment: AlignmentType.RIGHT,
                           }),
                         ],
-                        width: { size: 20, type: WidthType.PERCENTAGE },
+                        width: { size: 15, type: WidthType.PERCENTAGE },
                       }),
                     ],
                   })
               );
 
               // Add total row
-              particularRows.push(
+              accountTableRows.push(
                 new TableRow({
                   children: [
                     new TableCell({
                       children: [
                         new Paragraph({
                           children: [new TextRun({ text: "Total", bold: true })],
+                          alignment: AlignmentType.RIGHT,
                         }),
                       ],
-                      columnSpan: 2,
+                      columnSpan: 6,
                     }),
                     new TableCell({
                       children: [
                         new Paragraph({
                           children: [
                             new TextRun({
-                              text: "₹ ",
+                              text: this.accountsTotal.toLocaleString("en-IN", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }),
                               bold: true,
-                            }),
-                            new TextRun({
-                              text: this.$options.filters.currency(this.particularsTotal),
-                              bold: true,
-                              underline: {},
                             }),
                           ],
+                          alignment: AlignmentType.RIGHT,
                         }),
                       ],
                     }),
@@ -853,6 +526,7 @@
                     document: {
                       run: {
                         font: "Arial",
+                        size: 22,
                       },
                     },
                   },
@@ -870,21 +544,12 @@
                       },
                     },
                     children: [
-                      // Header
+                      // Header - Organization Name
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "U. P. Rajya Vidyut Utpadan Nigam Ltd.",
+                            text: "U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST.",
                             bold: true,
-                            size: 28,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                      }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "CONTRIBUTORY PROVIDENT FUND TRUST",
                             size: 24,
                           }),
                         ],
@@ -893,21 +558,53 @@
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "PAYMENT AUTHORITY",
-                            bold: true,
-                            size: 26,
+                            text: "9th Floor, Shakti Bhawan Extn., Room No. 928",
+                            size: 20,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "14-Ashok Marg, Lucknow - 226001",
+                            size: 20,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लि0 सी0पी0एफ0 ट्रस्ट,",
+                            size: 20,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "9वीं तल, शक्ति भवन विस्तार, कक्ष संख्या – 928,",
+                            size: 20,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "14. अशोक मार्ग, लखनऊ – 226 001",
+                            size: 20,
                           }),
                         ],
                         alignment: AlignmentType.CENTER,
                       }),
                       new Paragraph(""),
 
-                      // Payee details with date on same line using table
+                      // Letter No and Date
                       new Table({
-                        width: {
-                          size: 100,
-                          type: WidthType.PERCENTAGE,
-                        },
+                        width: { size: 100, type: WidthType.PERCENTAGE },
                         borders: {
                           top: { style: BorderStyle.NONE },
                           bottom: { style: BorderStyle.NONE },
@@ -924,20 +621,13 @@
                                   new Paragraph({
                                     children: [
                                       new TextRun({
-                                        text: "Name of Payee: ",
+                                        text: `NO. ${this.formData.letterNo}`,
                                         bold: true,
-                                      }),
-                                      new TextRun({
-                                        text: "Yourself",
-                                        underline: {},
                                       }),
                                     ],
                                   }),
                                 ],
-                                width: {
-                                  size: 70,
-                                  type: WidthType.PERCENTAGE,
-                                },
+                                width: { size: 50, type: WidthType.PERCENTAGE },
                                 borders: {
                                   top: { style: BorderStyle.NONE },
                                   bottom: { style: BorderStyle.NONE },
@@ -950,26 +640,14 @@
                                   new Paragraph({
                                     children: [
                                       new TextRun({
-                                        text: "Date: ",
+                                        text: `dated: ${this.formatDate(this.formData.date)}`,
                                         bold: true,
-                                      }),
-                                      new TextRun({
-                                        text: new Date(this.formData.date)
-                                          .toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "numeric",
-                                          })
-                                          .replace(/\//g, "."),
                                       }),
                                     ],
                                     alignment: AlignmentType.RIGHT,
                                   }),
                                 ],
-                                width: {
-                                  size: 30,
-                                  type: WidthType.PERCENTAGE,
-                                },
+                                width: { size: 50, type: WidthType.PERCENTAGE },
                                 borders: {
                                   top: { style: BorderStyle.NONE },
                                   bottom: { style: BorderStyle.NONE },
@@ -981,625 +659,187 @@
                           }),
                         ],
                       }),
+                      new Paragraph(""),
+
+                      // Recipient
+                      new Paragraph({
+                        children: [new TextRun(`${this.formData.recipientDesignation},`)],
+                      }),
+                      new Paragraph({
+                        children: [new TextRun(`${this.formData.bankName},`)],
+                      }),
+                      new Paragraph({
+                        children: [new TextRun(this.formData.branchAddress)],
+                      }),
+                      new Paragraph(""),
+
+                      // Subject
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "Particulars of Payment: ",
+                            text: "Subject: Transfer of Fund through RTGS",
                             bold: true,
+                            underline: {
+                              type: UnderlineType.SINGLE,
+                            },
                           }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                      new Paragraph(""),
+
+                      // Body
+                      new Paragraph({
+                        children: [new TextRun("Dear Sir,")],
+                      }),
+                      new Paragraph({
+                        children: [
                           new TextRun({
-                            text: this.formattedPurpose,
-                            underline: {},
+                            text: `     You are aware that UPRVUNL CPF Trust remits the amount to the projects on their demand basically for the welfare of the employees. Accordingly, you are requested to kindly transfer Fund our CBI A/c ${this.formData.cbiAccountNo} with PAN No. ${this.formData.panNo}, through RTGS to the transferee account as per detail given below:-`,
                           }),
                         ],
                         alignment: AlignmentType.JUSTIFIED,
                       }),
                       new Paragraph(""),
 
-                      // Bills/Demands attached
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "No of Bills/Demands attached ",
-                            bold: true,
-                            font: "Arial",
+                      // Account Details Table
+                      new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        rows: [
+                          // Header row
+                          new TableRow({
+                            children: [
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "Sl.\nNo.", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 5, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "Name of Account", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 20, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "Bank/ Branch", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 20, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "Account No.", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 15, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "Type\nof A/c", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 10, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "IFSC Code", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 15, type: WidthType.PERCENTAGE },
+                              }),
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [new TextRun({ text: "Amount", bold: true })],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 15, type: WidthType.PERCENTAGE },
+                              }),
+                            ],
                           }),
-                          new TextRun({
-                            text: "_".repeat(20),
-                            font: "Arial",
-                          }),
+                          // Data rows
+                          ...accountTableRows,
                         ],
                       }),
                       new Paragraph(""),
 
-                      // Amount
+                      // Cheque details paragraph
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "Amount: ₹ ",
-                            bold: true,
-                            size: 24,
-                          }),
-                          new TextRun({
-                            text: this.particularsTotal.toLocaleString("en-IN", {
+                            text: `     Please find herewith Cheque No ${this.formData.chequeNo} dated ${this.formatDate(this.formData.chequeDate)} authorising for payment amounting Rs.${this.accountsTotal.toLocaleString("en-IN", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                            }),
-                            bold: true,
-                            size: 24,
-                            underline: {},
+                            })} `,
                           }),
-                        ],
-                      }),
-                      new Paragraph(""),
-
-                      // Particulars table
-                      new Table({
-                        width: {
-                          size: 100,
-                          type: WidthType.PERCENTAGE,
-                        },
-                        tableLayout: "fixed",
-                        rows: [
-                          // Header row 1
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "PARTICULARS",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 35, type: WidthType.PERCENTAGE },
-                                columnSpan: 2,
-                                margins: {
-                                  top: 100,
-                                  bottom: 100,
-                                  left: 100,
-                                  right: 100,
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Amount Rs.",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 10, type: WidthType.PERCENTAGE },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "PARTICULARS",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 35, type: WidthType.PERCENTAGE },
-                                columnSpan: 2,
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Amount Rs.",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 10, type: WidthType.PERCENTAGE },
-                              }),
-                            ],
-                          }),
-                          // Header row 2
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "CPF Advance A/c",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 35, type: WidthType.PERCENTAGE },
-                                columnSpan: 2,
-                              }),
-                              new TableCell({
-                                children: [new Paragraph("")],
-                                width: { size: 10, type: WidthType.PERCENTAGE },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Bank A/c",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 35, type: WidthType.PERCENTAGE },
-                                columnSpan: 2,
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: this.particularsTotal.toLocaleString("en-IN", {
-                                          minimumFractionDigits: 2,
-                                          maximumFractionDigits: 2,
-                                        }),
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 10, type: WidthType.PERCENTAGE },
-                              }),
-                            ],
-                          }),
-                          // Data rows (6 columns)
-                          ...this.createDocxTableRows({
-                            TableRow,
-                            TableCell,
-                            Paragraph,
-                            TextRun,
-                            AlignmentType,
-                            WidthType,
-                          }),
-                          // Final total row
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Total",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 35, type: WidthType.PERCENTAGE },
-                                columnSpan: 2,
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: this.particularsTotal.toLocaleString("en-IN", {
-                                          minimumFractionDigits: 2,
-                                          maximumFractionDigits: 2,
-                                        }),
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 10, type: WidthType.PERCENTAGE },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Total",
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 35, type: WidthType.PERCENTAGE },
-                                columnSpan: 2,
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: this.particularsTotal.toLocaleString("en-IN", {
-                                          minimumFractionDigits: 2,
-                                          maximumFractionDigits: 2,
-                                        }),
-                                        bold: true,
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: { size: 10, type: WidthType.PERCENTAGE },
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new Paragraph(""),
-
-                      // Payment status and Signatures (borderless table for proper alignment)
-                      new Table({
-                        width: {
-                          size: 100,
-                          type: WidthType.PERCENTAGE,
-                        },
-                        borders: {
-                          top: { style: "none" },
-                          bottom: { style: "none" },
-                          left: { style: "none" },
-                          right: { style: "none" },
-                          insideHorizontal: { style: "none" },
-                          insideVertical: { style: "none" },
-                        },
-                        rows: [
-                          // First row: Payment status
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [new TextRun("Passed")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: {
-                                  size: 33.33,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [new TextRun("Checked")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: {
-                                  size: 33.33,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [new TextRun("Passed for Payment")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: {
-                                  size: 33.34,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                            ],
-                          }),
-                          // Second row: Signatures with space above
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph({
-                                    children: [new TextRun("_________________")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                  new Paragraph({
-                                    children: [new TextRun("Sig. of Dealing Asst.")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                  new Paragraph(""),
-                                ],
-                                width: {
-                                  size: 33.33,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph({
-                                    children: [new TextRun("_________________")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                  new Paragraph({
-                                    children: [new TextRun("Sig. of Accountant")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                  new Paragraph(""),
-                                ],
-                                width: {
-                                  size: 33.33,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph({
-                                    children: [new TextRun("_________________")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                  new Paragraph({
-                                    children: [new TextRun("Secretary Trust")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                  new Paragraph(""),
-                                ],
-                                width: {
-                                  size: 33.34,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new Paragraph(""),
-
-                      // Payment instruction
-                      new Paragraph({
-                        children: [
-                          new TextRun("Please Pay Rs. "),
                           new TextRun({
-                            text: `${this.particularsTotal.toLocaleString("en-IN", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} (RS. ${this.numberToWords(Math.floor(this.particularsTotal))})`,
+                            text: `(Rs. ${this.amountInWords} ONLY)`,
                             bold: true,
                           }),
-                          new TextRun(" and "),
                           new TextRun({
-                            text: "Debit Trust A/c no.-1233789900",
-                            bold: true,
+                            text: " as per table above for RTGS transfer at our projects.",
                           }),
                         ],
                         alignment: AlignmentType.JUSTIFIED,
                       }),
                       new Paragraph(""),
 
-                      // Accountant and Secretary Trust line (borderless table for proper alignment)
-                      new Table({
-                        width: {
-                          size: 100,
-                          type: WidthType.PERCENTAGE,
-                        },
-                        borders: {
-                          top: { style: "none" },
-                          bottom: { style: "none" },
-                          left: { style: "none" },
-                          right: { style: "none" },
-                          insideHorizontal: { style: "none" },
-                          insideVertical: { style: "none" },
-                        },
-                        rows: [
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph({
-                                    children: [new TextRun("Accountant")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: {
-                                  size: 50,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph(""),
-                                  new Paragraph(""),
-                                  new Paragraph({
-                                    children: [new TextRun("Secretary Trust")],
-                                    alignment: AlignmentType.CENTER,
-                                  }),
-                                ],
-                                width: {
-                                  size: 50,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                            ],
-                          }),
-                        ],
+                      // Closing
+                      new Paragraph({
+                        children: [new TextRun("Thanking You,")],
                       }),
+                      new Paragraph({
+                        children: [new TextRun("Encl. As Above.")],
+                      }),
+                      new Paragraph(""),
+                      new Paragraph(""),
                       new Paragraph(""),
 
-                      // Cheque payment details
+                      // Signature
                       new Paragraph({
-                        children: [new TextRun("Paid by Cheque vide Cash book voucher No ___________date___________")],
-                        alignment: AlignmentType.LEFT,
-                      }),
-                      new Table({
-                        width: {
-                          size: 100,
-                          type: WidthType.PERCENTAGE,
-                        },
-                        borders: {
-                          top: { style: "none" },
-                          bottom: { style: "none" },
-                          left: { style: "none" },
-                          right: { style: "none" },
-                          insideHorizontal: { style: "none" },
-                          insideVertical: { style: "none" },
-                        },
-                        rows: [
-                          new TableRow({
-                            children: [
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Cheque No- ",
-                                        font: "Arial",
-                                      }),
-                                      new TextRun({
-                                        text: this.formData.chequeNumber || "_______",
-                                        bold: true,
-                                        font: "Arial",
-                                      }),
-                                      new TextRun({
-                                        text: " Date- ",
-                                        font: "Arial",
-                                      }),
-                                      new TextRun({
-                                        text: new Date(this.formData.date)
-                                          .toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "numeric",
-                                          })
-                                          .replace(/\//g, "."),
-                                        bold: true,
-                                        font: "Arial",
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.LEFT,
-                                  }),
-                                ],
-                                width: {
-                                  size: 70,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                              new TableCell({
-                                children: [
-                                  new Paragraph({
-                                    children: [
-                                      new TextRun({
-                                        text: "Sig. of Cashier",
-                                        font: "Arial",
-                                      }),
-                                    ],
-                                    alignment: AlignmentType.RIGHT,
-                                  }),
-                                ],
-                                width: {
-                                  size: 30,
-                                  type: WidthType.PERCENTAGE,
-                                },
-                                borders: {
-                                  top: { style: "none" },
-                                  bottom: { style: "none" },
-                                  left: { style: "none" },
-                                  right: { style: "none" },
-                                },
-                              }),
-                            ],
-                          }),
-                        ],
+                        children: [new TextRun("For UPRVUNL CPF TRUST")],
+                        alignment: AlignmentType.RIGHT,
                       }),
                       new Paragraph(""),
                       new Paragraph(""),
                       new Paragraph(""),
+                      new Paragraph({
+                        children: [new TextRun("(Pradeep Soni)")],
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                      new Paragraph({
+                        children: [new TextRun("Secretary (Trust)")],
+                        alignment: AlignmentType.RIGHT,
+                      }),
                     ],
                   },
                 ],
               });
 
               const blob = await Packer.toBlob(doc);
-              // Generate dynamic filename based on selected date (e.g., "August 2025")
               const dateObj = new Date(this.formData.date);
               const monthName = dateObj.toLocaleDateString("en-US", {
                 month: "long",
               });
               const year = dateObj.getFullYear();
-              const fileName = `${monthName} ${year}.docx`;
+              const fileName = `Bank_Letter_RTGS_${monthName}_${year}.docx`;
               saveAs(blob, fileName);
 
               alert("DOCX file generated successfully!");
@@ -1610,75 +850,23 @@
           },
           clearForm() {
             if (confirm("Are you sure you want to clear all form data?")) {
-              this.issuedDateManuallyChanged = false;
-              this.isAutoSyncingDate = false;
               this.formData = {
+                letterNo: "Sec/UNL/CPF Trust/",
                 date: new Date().toISOString().split("T")[0],
-                payeeName: "Yourself",
-                purpose: "",
-                letters: [{ number: "", date: "" }],
-                issuedLetterNo: "",
-                issuedLetterDate: new Date().toISOString().split("T")[0],
-                chequeNumber: "",
-                particulars: [
+                recipientDesignation: "The Branch Manager",
+                bankName: "Central Bank of India",
+                branchAddress: "Joppling Road Br, Lucknow",
+                cbiAccountNo: "1233789900",
+                panNo: "AAATU2424L",
+                chequeNo: "",
+                chequeDate: new Date().toISOString().split("T")[0],
+                accounts: [
                   {
-                    description: "UP RAJYA VIDYUT UTPADAN NIGAM LTD.",
-                    amount: 0,
-                  },
-                  {
-                    description: "UP JAL VIDYUT NIGAM LTD.",
-                    amount: 0,
-                  },
-                  {
-                    description: "DY CAO, CFA&BO, PTPS, PANKI, KANPUR",
-                    amount: 0,
-                  },
-                  {
-                    description: "DY CAO, P&AD, OTPS, OBRA-'B'",
-                    amount: 0,
-                  },
-                  {
-                    description: "CFA&BO, CTPS, OBRA-'C'",
-                    amount: 0,
-                  },
-                  {
-                    description: "EE, HOPS, OBRA",
-                    amount: 0,
-                  },
-                  {
-                    description: "BY CAO, CFA&BO, ANPARA-'A'TPS",
-                    amount: 0,
-                  },
-                  {
-                    description: "DY CAO, CFA&BO, ANPARA-'B'TPS",
-                    amount: 0,
-                  },
-                  {
-                    description: "DGM(F), CONSTN. UNIT CFA&BO, ANPARA - DTPP",
-                    amount: 0,
-                  },
-                  {
-                    description: "SAO, EPAD, UPRVUNL, HARDUAGANJ EXTN., KASIMPUR",
-                    amount: 0,
-                  },
-                  {
-                    description: "SAO, EPAD, UPRVUNL, HARDUAGANJ O&M., KASIMPUR",
-                    amount: 0,
-                  },
-                  {
-                    description: "CFA&BO, 1X660, HARDUAGANJ, KASIMPUR",
-                    amount: 0,
-                  },
-                  {
-                    description: "CFA&BO, PARICHA 2X210, JHANSI",
-                    amount: 0,
-                  },
-                  {
-                    description: "CFA&BO, PARICHA 2X250, JHANSI",
-                    amount: 0,
-                  },
-                  {
-                    description: "CFA & BO, JVUNL",
+                    name: "",
+                    bank: "",
+                    accountNo: "",
+                    accountType: "C/A/c",
+                    ifsc: "",
                     amount: 0,
                   },
                 ],
