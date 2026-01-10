@@ -86,7 +86,7 @@
         <div class="mb-6">
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-lg font-semibold text-gray-700">Bank Account Details</h3>
-            <span class="text-sm text-gray-600">Enter amounts for the accounts below (all 14 accounts are pre-populated)</span>
+            <button @click="addAccount" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">+ Add Account</button>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse border border-gray-300 text-sm">
@@ -99,18 +99,32 @@
                   <th class="border border-gray-300 px-2 py-2 text-left w-24">Type of A/c</th>
                   <th class="border border-gray-300 px-2 py-2 text-left">IFSC Code</th>
                   <th class="border border-gray-300 px-2 py-2 text-left w-32">Amount</th>
+                  <th class="border border-gray-300 px-2 py-2 text-center w-16">Action</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(account, index) in formData.accounts" :key="index" class="hover:bg-gray-50">
                   <td class="border border-gray-300 px-2 py-2 text-center">{{ index + 1 }}</td>
-                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.name }}</td>
-                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.bank }}</td>
-                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.accountNo }}</td>
-                  <td class="border border-gray-300 px-2 py-2 text-center text-sm">{{ account.accountType }}</td>
-                  <td class="border border-gray-300 px-2 py-2 text-sm">{{ account.ifsc }}</td>
                   <td class="border border-gray-300 px-2 py-2">
-                    <input v-model.number="account.amount" type="number" step="0.01" class="w-full px-2 py-1 border border-gray-300 bg-white focus:outline-none focus:border focus:border-blue-500 rounded text-sm" placeholder="0.00" />
+                    <input v-model="account.name" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Account name" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.bank" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Bank name" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.accountNo" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="Account no" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.accountType" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="C/A/c" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model="account.ifsc" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="IFSC code" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2">
+                    <input v-model.number="account.amount" type="number" step="0.01" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded text-sm" placeholder="0.00" />
+                  </td>
+                  <td class="border border-gray-300 px-2 py-2 text-center">
+                    <button @click="removeAccount(index)" class="text-red-600 hover:text-red-800 text-sm px-2 py-1" title="Remove">✕</button>
                   </td>
                 </tr>
               </tbody>
@@ -118,6 +132,7 @@
                 <tr class="bg-gray-100 font-semibold">
                   <td class="border border-gray-300 px-2 py-2 text-right" colspan="6">Total</td>
                   <td class="border border-gray-300 px-2 py-2">{{ accountsTotal | currency }}</td>
+                  <td class="border border-gray-300 px-2 py-2"></td>
                 </tr>
               </tfoot>
             </table>
@@ -143,7 +158,7 @@
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <button @click="generatePreview" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">Preview Document</button>
           <button @click="generateDocx" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Generate DOCX</button>
-          <button @click="clearForm" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">Clear Amounts</button>
+          <button @click="clearForm" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">Clear & Reset</button>
         </div>
       </div>
 
@@ -176,6 +191,7 @@
           showPreview: false,
           previewContent: "",
           isAutoSyncingChequeDate: false,
+          logoUrl: "./logo.png",
           formData: {
             letterNo: "Sec/UNL/CPF Trust/",
             date: new Date().toISOString().split("T")[0],
@@ -387,16 +403,18 @@
           },
           removeAccount(index) {
             if (this.formData.accounts.length > 1) {
-              this.formData.accounts.splice(index, 1);
+              if (confirm("Are you sure you want to remove this account?")) {
+                this.formData.accounts.splice(index, 1);
+              }
             } else {
-              alert("At least one account is required.");
+              alert("At least one account row is required.");
             }
           },
           generatePreview() {
-            // Check if there are any accounts with amounts > 0
-            const hasAmounts = this.formData.accounts.some((acc) => acc.amount > 0);
-            if (!hasAmounts) {
-              if (confirm("No amounts have been entered yet. Do you still want to see the preview?")) {
+            // Check if there are any accounts with valid data
+            const hasValidAccounts = this.formData.accounts.some((acc) => acc.amount > 0 && acc.name && acc.name.trim() !== "");
+            if (!hasValidAccounts) {
+              if (confirm("No valid account data has been entered yet. Do you still want to see the preview?")) {
                 this.previewContent = this.createPreviewHTML();
                 this.showPreview = true;
               }
@@ -407,8 +425,8 @@
             this.showPreview = true;
           },
           createPreviewHTML() {
-            // Filter out accounts with 0 amounts
-            const nonZeroAccounts = this.formData.accounts.filter((acc) => acc.amount > 0);
+            // Filter out accounts that have no data (empty name or amount = 0)
+            const nonZeroAccounts = this.formData.accounts.filter((acc) => acc.amount > 0 && acc.name && acc.name.trim() !== "");
 
             let accountRows = "";
             if (nonZeroAccounts.length === 0) {
@@ -446,17 +464,18 @@
                 <div style="text-align: center; margin-bottom: 20px;">
                   <div style="display: flex; align-items: flex-start; justify-content: center; gap: 20px;">
                     <div style="flex-shrink: 0; margin-top: 10px;">
-                      <div style="width: 80px; height: 80px; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                      <img src="${this.logoUrl}" alt="UPRVUNL Logo" style="width: 100px; height: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                      <div style="width: 80px; height: 80px; border: 2px solid #000; border-radius: 50%; display: none; align-items: center; justify-content: center;">
                         <span style="font-size: 10px;">UPRVUNL</span>
                       </div>
                     </div>
                     <div style="flex: 1; text-align: center;">
-                      <h2 style="margin: 0; font-size: 16px; font-weight: bold;">U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST.</h2>
-                      <p style="margin: 2px 0; font-size: 12px;">9th Floor, Shakti Bhawan Extn., Room No. 928</p>
-                      <p style="margin: 2px 0; font-size: 12px;">14-Ashok Marg, Lucknow - 226001</p>
-                      <p style="margin: 2px 0; font-size: 12px;">उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लि0 सी0पी0एफ0 ट्रस्ट,</p>
-                      <p style="margin: 2px 0; font-size: 12px;">9वीं तल, शक्ति भवन विस्तार, कक्ष संख्या – 928,</p>
-                      <p style="margin: 2px 0; font-size: 12px;">14. अशोक मार्ग, लखनऊ – 226 001</p>
+                      <h2 style="margin: 0; font-size: 16px; font-weight: bold;">U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST</h2>
+                      <p style="margin: 2px 0; font-size: 14px; font-weight: bold;">9th Floor, Shakti Bhawan Extn., Room No. 928</p>
+                      <p style="margin: 2px 0; font-size: 14px; font-weight: bold;">14-Ashok Marg, Lucknow - 226001</p>
+                      <p style="margin: 2px 0; font-size: 14px; font-weight: bold;">उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लि0 सी0पी0एफ0 ट्रस्ट,</p>
+                      <p style="margin: 2px 0; font-size: 14px; font-weight: bold;">9वीं तल, शक्ति भवन विस्तार, कक्ष संख्या – 928,</p>
+                      <p style="margin: 2px 0; font-size: 14px; font-weight: bold;">14. अशोक मार्ग, लखनऊ – 226 001</p>
                     </div>
                   </div>
                 </div>
@@ -518,10 +537,10 @@
                 <!-- Cheque Details -->
                 <div style="margin-bottom: 20px; text-align: justify;">
                   <p style="margin: 5px 0; text-indent: 50px;">
-                    Please find herewith Cheque No ${this.formData.chequeNo} dated ${this.formatDate(this.formData.chequeDate)} authorising for payment amounting Rs.${this.accountsTotal.toLocaleString("en-IN", {
+                    Please find herewith Cheque No <strong>${this.formData.chequeNo}</strong> dated <strong>${this.formatDate(this.formData.chequeDate)}</strong> authorising for payment amounting <strong>Rs.${this.accountsTotal.toLocaleString("en-IN", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            })} <strong>(Rs. ${this.amountInWords} ONLY)</strong> as per table above for RTGS transfer at our projects.
+            })}</strong> <strong>(Rs. ${this.amountInWords} ONLY)</strong> as per table above for RTGS transfer at our projects.
                   </p>
                 </div>
 
@@ -533,19 +552,19 @@
 
                 <!-- Signature -->
                 <div style="text-align: right; margin-top: 60px;">
-                  <p style="margin: 0;">For UPRVUNL CPF TRUST</p>
-                  <p style="margin: 40px 0 5px 0;">(Pradeep Soni)</p>
-                  <p style="margin: 0;">Secretary (Trust)</p>
+                  <p style="margin: 0; font-weight: bold;">For UPRVUNL CPF TRUST</p>
+                  <p style="margin: 100px 0 5px 0; font-weight: bold;">(Pradeep Soni)</p>
+                  <p style="margin: 0; font-weight: bold;">Secretary (Trust)</p>
                 </div>
               </div>
             `;
           },
           async generateDocx() {
             try {
-              // Check if there are any accounts with amounts > 0
-              const hasAmounts = this.formData.accounts.some((acc) => acc.amount > 0);
-              if (!hasAmounts) {
-                alert("Please enter at least one account amount before generating the document.");
+              // Check if there are any accounts with valid data
+              const hasValidAccounts = this.formData.accounts.some((acc) => acc.amount > 0 && acc.name && acc.name.trim() !== "");
+              if (!hasValidAccounts) {
+                alert("Please enter at least one valid account with name and amount before generating the document.");
                 return;
               }
 
@@ -560,10 +579,27 @@
                 throw new Error("DOCX library not loaded. Please refresh the page and try again.");
               }
 
-              const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, HeadingLevel, UnderlineType } = docxLib;
+              const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, HeadingLevel, UnderlineType, ImageRun } = docxLib;
 
-              // Filter out accounts with 0 amounts
-              const nonZeroAccounts = this.formData.accounts.filter((acc) => acc.amount > 0);
+              // Fetch logo image from local file
+              let logoImageData = null;
+              try {
+                console.log("Fetching logo from:", this.logoUrl);
+                const response = await fetch(this.logoUrl);
+                if (!response.ok) {
+                  throw new Error(`Failed to fetch logo: ${response.status}`);
+                }
+                const blob = await response.blob();
+                const arrayBuffer = await blob.arrayBuffer();
+                logoImageData = new Uint8Array(arrayBuffer);
+                console.log("Logo fetched successfully, size:", logoImageData.length, "bytes");
+              } catch (error) {
+                console.error("Could not fetch logo:", error);
+                alert("Note: Logo could not be loaded. The document will be generated without the logo.");
+              }
+
+              // Filter out accounts that have no data (empty name or amount = 0)
+              const nonZeroAccounts = this.formData.accounts.filter((acc) => acc.amount > 0 && acc.name && acc.name.trim() !== "");
 
               // Create account table rows
               const accountTableRows = nonZeroAccounts.map(
@@ -573,52 +609,76 @@
                       new TableCell({
                         children: [
                           new Paragraph({
-                            children: [new TextRun((index + 1).toString())],
+                            children: [new TextRun({ text: (index + 1).toString(), size: 16 })],
                             alignment: AlignmentType.CENTER,
                           }),
                         ],
                         width: { size: 5, type: WidthType.PERCENTAGE },
-                      }),
-                      new TableCell({
-                        children: [new Paragraph(acc.name || "")],
-                        width: { size: 20, type: WidthType.PERCENTAGE },
-                      }),
-                      new TableCell({
-                        children: [new Paragraph(acc.bank || "")],
-                        width: { size: 20, type: WidthType.PERCENTAGE },
-                      }),
-                      new TableCell({
-                        children: [new Paragraph(acc.accountNo || "")],
-                        width: { size: 15, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
                       }),
                       new TableCell({
                         children: [
                           new Paragraph({
-                            children: [new TextRun(acc.accountType || "")],
+                            children: [new TextRun({ text: acc.name || "", size: 16 })],
+                          }),
+                        ],
+                        width: { size: 20, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
+                      }),
+                      new TableCell({
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun({ text: acc.bank || "", size: 16 })],
+                          }),
+                        ],
+                        width: { size: 20, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
+                      }),
+                      new TableCell({
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun({ text: acc.accountNo || "", size: 16 })],
+                          }),
+                        ],
+                        width: { size: 15, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
+                      }),
+                      new TableCell({
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun({ text: acc.accountType || "", size: 16 })],
                             alignment: AlignmentType.CENTER,
                           }),
                         ],
                         width: { size: 10, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
                       }),
                       new TableCell({
-                        children: [new Paragraph(acc.ifsc || "")],
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun({ text: acc.ifsc || "", size: 16 })],
+                          }),
+                        ],
                         width: { size: 15, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
                       }),
                       new TableCell({
                         children: [
                           new Paragraph({
                             children: [
-                              new TextRun(
-                                (acc.amount || 0).toLocaleString("en-IN", {
+                              new TextRun({
+                                text: (acc.amount || 0).toLocaleString("en-IN", {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
-                                })
-                              ),
+                                }),
+                                size: 16,
+                              }),
                             ],
                             alignment: AlignmentType.RIGHT,
                           }),
                         ],
                         width: { size: 15, type: WidthType.PERCENTAGE },
+                        margins: { top: 30, bottom: 30, left: 20, right: 20 },
                       }),
                     ],
                   })
@@ -631,11 +691,12 @@
                     new TableCell({
                       children: [
                         new Paragraph({
-                          children: [new TextRun({ text: "Total", bold: true })],
+                          children: [new TextRun({ text: "Total", bold: true, size: 16 })],
                           alignment: AlignmentType.RIGHT,
                         }),
                       ],
                       columnSpan: 6,
+                      margins: { top: 30, bottom: 30, left: 20, right: 20 },
                     }),
                     new TableCell({
                       children: [
@@ -647,11 +708,13 @@
                                 maximumFractionDigits: 2,
                               }),
                               bold: true,
+                              size: 16,
                             }),
                           ],
                           alignment: AlignmentType.RIGHT,
                         }),
                       ],
+                      margins: { top: 30, bottom: 30, left: 20, right: 20 },
                     }),
                   ],
                 })
@@ -663,7 +726,7 @@
                     document: {
                       run: {
                         font: "Arial",
-                        size: 22,
+                        size: 18,
                       },
                     },
                   },
@@ -673,71 +736,141 @@
                     properties: {
                       page: {
                         margin: {
-                          top: 720,
+                          top: 360,
                           right: 720,
-                          bottom: 720,
+                          bottom: 360,
                           left: 720,
                         },
                       },
                     },
                     children: [
-                      // Header - Organization Name
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST.",
-                            bold: true,
-                            size: 24,
+                      // Header with Logo and Organization Name (side by side using table)
+                      new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: {
+                          top: { style: BorderStyle.NONE },
+                          bottom: { style: BorderStyle.NONE },
+                          left: { style: BorderStyle.NONE },
+                          right: { style: BorderStyle.NONE },
+                          insideHorizontal: { style: BorderStyle.NONE },
+                          insideVertical: { style: BorderStyle.NONE },
+                        },
+                        rows: [
+                          new TableRow({
+                            children: [
+                              // Left cell - Logo
+                              new TableCell({
+                                children: logoImageData
+                                  ? [
+                                      new Paragraph({
+                                        children: [
+                                          new ImageRun({
+                                            data: logoImageData,
+                                            transformation: {
+                                              width: 100,
+                                              height: 100,
+                                            },
+                                          }),
+                                        ],
+                                        alignment: AlignmentType.LEFT,
+                                      }),
+                                    ]
+                                  : [new Paragraph("")],
+                                width: { size: 20, type: WidthType.PERCENTAGE },
+                                verticalAlign: "center",
+                                borders: {
+                                  top: { style: BorderStyle.NONE },
+                                  bottom: { style: BorderStyle.NONE },
+                                  left: { style: BorderStyle.NONE },
+                                  right: { style: BorderStyle.NONE },
+                                },
+                              }),
+                              // Right cell - Organization details
+                              new TableCell({
+                                children: [
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST",
+                                        bold: true,
+                                        size: 20,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { after: 60 },
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "9th Floor, Shakti Bhawan Extn., Room No. 928",
+                                        size: 20,
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { after: 40 },
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "14-Ashok Marg, Lucknow - 226001",
+                                        size: 20,
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { after: 40 },
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लि0 सी0पी0एफ0 ट्रस्ट,",
+                                        size: 20,
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { after: 40 },
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "9वीं तल, शक्ति भवन विस्तार, कक्ष संख्या – 928,",
+                                        size: 20,
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { after: 40 },
+                                  }),
+                                  new Paragraph({
+                                    children: [
+                                      new TextRun({
+                                        text: "14. अशोक मार्ग, लखनऊ – 226 001",
+                                        size: 20,
+                                        bold: true,
+                                      }),
+                                    ],
+                                    alignment: AlignmentType.CENTER,
+                                  }),
+                                ],
+                                width: { size: 80, type: WidthType.PERCENTAGE },
+                                verticalAlign: "center",
+                                borders: {
+                                  top: { style: BorderStyle.NONE },
+                                  bottom: { style: BorderStyle.NONE },
+                                  left: { style: BorderStyle.NONE },
+                                  right: { style: BorderStyle.NONE },
+                                },
+                              }),
+                            ],
                           }),
                         ],
-                        alignment: AlignmentType.CENTER,
                       }),
                       new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "9th Floor, Shakti Bhawan Extn., Room No. 928",
-                            size: 20,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun("")],
+                        spacing: { after: 40 },
                       }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "14-Ashok Marg, Lucknow - 226001",
-                            size: 20,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                      }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "उत्तर प्रदेश राज्य विद्युत उत्पादन निगम लि0 सी0पी0एफ0 ट्रस्ट,",
-                            size: 20,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                      }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "9वीं तल, शक्ति भवन विस्तार, कक्ष संख्या – 928,",
-                            size: 20,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                      }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: "14. अशोक मार्ग, लखनऊ – 226 001",
-                            size: 20,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                      }),
-                      new Paragraph(""),
 
                       // Separator Line
                       new Paragraph({
@@ -750,8 +883,8 @@
                             size: 6,
                           },
                         },
+                        spacing: { after: 100 },
                       }),
-                      new Paragraph(""),
 
                       // Letter No and Date
                       new Table({
@@ -810,19 +943,24 @@
                           }),
                         ],
                       }),
-                      new Paragraph(""),
+                      new Paragraph({
+                        children: [new TextRun("")],
+                        spacing: { after: 80 },
+                      }),
 
                       // Recipient
                       new Paragraph({
                         children: [new TextRun(`${this.formData.recipientDesignation},`)],
+                        spacing: { after: 40 },
                       }),
                       new Paragraph({
                         children: [new TextRun(`${this.formData.bankName},`)],
+                        spacing: { after: 40 },
                       }),
                       new Paragraph({
                         children: [new TextRun(this.formData.branchAddress)],
+                        spacing: { after: 100 },
                       }),
-                      new Paragraph(""),
 
                       // Subject
                       new Paragraph({
@@ -836,12 +974,13 @@
                           }),
                         ],
                         alignment: AlignmentType.CENTER,
+                        spacing: { after: 100 },
                       }),
-                      new Paragraph(""),
 
                       // Body
                       new Paragraph({
                         children: [new TextRun("Dear Sir,")],
+                        spacing: { after: 80 },
                       }),
                       new Paragraph({
                         children: [
@@ -850,8 +989,8 @@
                           }),
                         ],
                         alignment: AlignmentType.JUSTIFIED,
+                        spacing: { after: 100 },
                       }),
-                      new Paragraph(""),
 
                       // Account Details Table
                       new Table({
@@ -863,65 +1002,72 @@
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "Sl.\nNo.", bold: true })],
+                                    children: [new TextRun({ text: "Sl.\nNo.", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 5, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "Name of Account", bold: true })],
+                                    children: [new TextRun({ text: "Name of Account", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 20, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "Bank/ Branch", bold: true })],
+                                    children: [new TextRun({ text: "Bank/ Branch", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 20, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "Account No.", bold: true })],
+                                    children: [new TextRun({ text: "Account No.", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 15, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "Type\nof A/c", bold: true })],
+                                    children: [new TextRun({ text: "Type\nof A/c", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 10, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "IFSC Code", bold: true })],
+                                    children: [new TextRun({ text: "IFSC Code", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 15, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [new TextRun({ text: "Amount", bold: true })],
+                                    children: [new TextRun({ text: "Amount", bold: true, size: 16 })],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
                                 width: { size: 15, type: WidthType.PERCENTAGE },
+                                margins: { top: 30, bottom: 30, left: 20, right: 20 },
                               }),
                             ],
                           }),
@@ -929,16 +1075,40 @@
                           ...accountTableRows,
                         ],
                       }),
-                      new Paragraph(""),
+                      new Paragraph({
+                        children: [new TextRun("")],
+                        spacing: { after: 100 },
+                      }),
 
                       // Cheque details paragraph
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: `     Please find herewith Cheque No ${this.formData.chequeNo} dated ${this.formatDate(this.formData.chequeDate)} authorising for payment amounting Rs.${this.accountsTotal.toLocaleString("en-IN", {
+                            text: `     Please find herewith Cheque No `,
+                          }),
+                          new TextRun({
+                            text: this.formData.chequeNo,
+                            bold: true,
+                          }),
+                          new TextRun({
+                            text: ` dated `,
+                          }),
+                          new TextRun({
+                            text: this.formatDate(this.formData.chequeDate),
+                            bold: true,
+                          }),
+                          new TextRun({
+                            text: ` authorising for payment amounting `,
+                          }),
+                          new TextRun({
+                            text: `Rs.${this.accountsTotal.toLocaleString("en-IN", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                            })} `,
+                            })}`,
+                            bold: true,
+                          }),
+                          new TextRun({
+                            text: ` `,
                           }),
                           new TextRun({
                             text: `(Rs. ${this.amountInWords} ONLY)`,
@@ -949,34 +1119,32 @@
                           }),
                         ],
                         alignment: AlignmentType.JUSTIFIED,
+                        spacing: { after: 100 },
                       }),
-                      new Paragraph(""),
 
                       // Closing
                       new Paragraph({
                         children: [new TextRun("Thanking You,")],
+                        spacing: { after: 40 },
                       }),
                       new Paragraph({
                         children: [new TextRun("Encl. As Above.")],
+                        spacing: { after: 120 },
                       }),
-                      new Paragraph(""),
-                      new Paragraph(""),
-                      new Paragraph(""),
 
                       // Signature
                       new Paragraph({
-                        children: [new TextRun("For UPRVUNL CPF TRUST")],
+                        children: [new TextRun({ text: "For UPRVUNL CPF TRUST", bold: true })],
                         alignment: AlignmentType.RIGHT,
-                      }),
-                      new Paragraph(""),
-                      new Paragraph(""),
-                      new Paragraph(""),
-                      new Paragraph({
-                        children: [new TextRun("(Pradeep Soni)")],
-                        alignment: AlignmentType.RIGHT,
+                        spacing: { after: 500 },
                       }),
                       new Paragraph({
-                        children: [new TextRun("Secretary (Trust)")],
+                        children: [new TextRun({ text: "(Pradeep Soni)", bold: true })],
+                        alignment: AlignmentType.RIGHT,
+                        spacing: { after: 40 },
+                      }),
+                      new Paragraph({
+                        children: [new TextRun({ text: "Secretary (Trust)", bold: true })],
                         alignment: AlignmentType.RIGHT,
                       }),
                     ],
@@ -1000,11 +1168,15 @@
             }
           },
           clearForm() {
-            if (confirm("Are you sure you want to clear all amounts?")) {
-              // Only clear the amounts, keep the account details
+            if (confirm("Are you sure you want to clear all amounts and reset custom accounts?")) {
+              // Clear amounts for all accounts
               this.formData.accounts.forEach((account) => {
                 account.amount = 0;
               });
+              // Remove any accounts added beyond the original 14
+              if (this.formData.accounts.length > 14) {
+                this.formData.accounts = this.formData.accounts.slice(0, 14);
+              }
               this.formData.chequeNo = "";
               this.formData.date = new Date().toISOString().split("T")[0];
               this.formData.chequeDate = new Date().toISOString().split("T")[0];
