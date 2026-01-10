@@ -29,16 +29,10 @@
         console.log("window.Docx:", typeof window.Docx);
         console.log("global docx:", typeof docx);
         if (window.docx) {
-          console.log(
-            "DOCX library available via window.docx:",
-            Object.keys(window.docx)
-          );
+          console.log("DOCX library available via window.docx:", Object.keys(window.docx));
         }
         if (typeof docx !== "undefined") {
-          console.log(
-            "DOCX library available via global docx:",
-            Object.keys(docx)
-          );
+          console.log("DOCX library available via global docx:", Object.keys(docx));
         }
       });
     </script>
@@ -48,22 +42,12 @@
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="text-center border-b pb-4">
-          <h1 class="text-2xl font-bold text-gray-800">
-            U. P. Rajya Vidyut Utpadan Nigam Ltd.
-          </h1>
-          <p class="text-lg text-gray-600 mt-1">
-            CONTRIBUTORY PROVIDENT FUND TRUST
-          </p>
-          <p class="text-xl font-semibold text-gray-700 mt-2">
-            PAYMENT AUTHORITY
-          </p>
+          <h1 class="text-2xl font-bold text-gray-800">U. P. Rajya Vidyut Utpadan Nigam CPF Trust</h1>
+          <p class="text-lg text-gray-600 mt-1">CONTRIBUTORY PROVIDENT FUND TRUST</p>
+          <p class="text-xl font-semibold text-gray-700 mt-2">PAYMENT AUTHORITY</p>
           <div class="mt-3 text-right">
             <label class="text-sm text-gray-600">Date:</label>
-            <input
-              v-model="formData.date"
-              type="date"
-              class="ml-2 px-2 py-1 border rounded text-sm"
-            />
+            <input v-model="formData.date" type="date" class="ml-2 px-2 py-1 border rounded text-sm" />
           </div>
         </div>
       </div>
@@ -72,164 +56,74 @@
       <div class="bg-white rounded-lg shadow-md p-6">
         <!-- Payee Details -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">
-            Payee Details
-          </h3>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Payee Details</h3>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-3"
-              >Particulars of Payment</label
-            >
+            <label class="block text-sm font-medium text-gray-700 mb-3">Particulars of Payment</label>
 
             <!-- Default text display for EDLI -->
-            <div
-              class="bg-gray-50 p-3 rounded-md mb-4 text-sm text-gray-700 text-justify"
-            >
-              RTGS in favor of nominee/legal heir on the demise of employee to
-              their SB a/c
-            </div>
+            <div class="bg-gray-50 p-3 rounded-md mb-4 text-sm text-gray-700 text-justify">RTGS in favor of nominee/legal heir on the demise of employee to their SB a/c</div>
 
             <!-- Final letter info -->
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Issued vide letter no.</label
-              >
+              <label class="block text-sm font-medium text-gray-700 mb-1">Issued vide letter no.</label>
               <div class="flex gap-3">
-                <input
-                  v-model="formData.issuedLetterNo"
-                  type="text"
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., 967"
-                />
+                <input v-model="formData.issuedLetterNo" type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 967" />
                 <div class="flex-1 relative">
-                  <input
-                    v-model="formData.issuedLetterDate"
-                    type="date"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    :class="{ 'border-blue-400 bg-blue-50': !issuedDateManuallyChanged }"
-                  />
-                  <span
-                    v-if="!issuedDateManuallyChanged"
-                    class="absolute right-8 top-1/2 transform -translate-y-1/2 text-blue-500 text-xs"
-                    title="Synced with document date"
-                  >
-                    🔗
-                  </span>
-                  <button
-                    v-if="issuedDateManuallyChanged"
-                    @click="resyncIssuedDate"
-                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 text-xs px-1"
-                    title="Re-sync with document date"
-                  >
-                    🔄
-                  </button>
+                  <input v-model="formData.issuedLetterDate" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" :class="{ 'border-blue-400 bg-blue-50': !issuedDateManuallyChanged }" />
+                  <span v-if="!issuedDateManuallyChanged" class="absolute right-8 top-1/2 transform -translate-y-1/2 text-blue-500 text-xs" title="Synced with document date"> 🔗 </span>
+                  <button v-if="issuedDateManuallyChanged" @click="resyncIssuedDate" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 text-xs px-1" title="Re-sync with document date">🔄</button>
                 </div>
               </div>
-              <p
-                v-if="!issuedDateManuallyChanged"
-                class="text-xs text-blue-600 mt-1"
-              >
-                📅 Date synced with document date above. Change manually to
-                override.
-              </p>
+              <p v-if="!issuedDateManuallyChanged" class="text-xs text-blue-600 mt-1">📅 Date synced with document date above. Change manually to override.</p>
             </div>
 
             <!-- Preview of formatted text -->
             <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <label class="block text-sm font-medium text-blue-800 mb-2"
-                >Preview:</label
-              >
-              <div class="text-sm text-blue-700 text-justify">
-                {{ formattedPurpose }}
-              </div>
+              <label class="block text-sm font-medium text-blue-800 mb-2">Preview:</label>
+              <div class="text-sm text-blue-700 text-justify">{{ formattedPurpose }}</div>
             </div>
           </div>
         </div>
 
         <!-- Amount Section -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">
-            Amount Details
-          </h3>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Amount Details</h3>
           <div class="bg-gray-50 p-4 rounded-lg">
-            <div class="text-lg font-semibold text-gray-800">
-              Amount: ₹ {{ particularsTotal.toLocaleString('en-IN', {
-              minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
-            </div>
+            <div class="text-lg font-semibold text-gray-800">Amount: ₹ {{ particularsTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
           </div>
         </div>
 
         <!-- Payment Particulars -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">
-            Payment Particulars
-          </h3>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Payment Particulars</h3>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse border border-gray-300">
               <thead>
                 <tr class="bg-gray-100">
-                  <th class="border border-gray-300 px-3 py-2 text-left w-16">
-                    S.No.
-                  </th>
-                  <th class="border border-gray-300 px-3 py-2 text-left">
-                    Particulars
-                  </th>
-                  <th class="border border-gray-300 px-3 py-2 text-left w-40">
-                    Amount (₹)
-                  </th>
-                  <th class="border border-gray-300 px-3 py-2 text-left w-20">
-                    Action
-                  </th>
+                  <th class="border border-gray-300 px-3 py-2 text-left w-16">S.No.</th>
+                  <th class="border border-gray-300 px-3 py-2 text-left">Particulars</th>
+                  <th class="border border-gray-300 px-3 py-2 text-left w-40">Amount (₹)</th>
+                  <th class="border border-gray-300 px-3 py-2 text-left w-20">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="(item, index) in formData.particulars"
-                  :key="index"
-                  class="hover:bg-gray-50"
-                >
+                <tr v-for="(item, index) in formData.particulars" :key="index" class="hover:bg-gray-50">
+                  <td class="border border-gray-300 px-3 py-2">{{ index + 1 }}</td>
                   <td class="border border-gray-300 px-3 py-2">
-                    {{ index + 1 }}
+                    <input v-model="item.description" type="text" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded" placeholder="Enter description" />
                   </td>
                   <td class="border border-gray-300 px-3 py-2">
-                    <input
-                      v-model="item.description"
-                      type="text"
-                      class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded"
-                      placeholder="Enter description"
-                    />
-                  </td>
-                  <td class="border border-gray-300 px-3 py-2">
-                    <input
-                      v-model.number="item.amount"
-                      type="number"
-                      step="0.01"
-                      class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded"
-                      placeholder="0.00"
-                    />
+                    <input v-model.number="item.amount" type="number" step="0.01" class="w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:bg-white focus:border focus:border-blue-500 rounded" placeholder="0.00" />
                   </td>
                   <td class="border border-gray-300 px-3 py-2 text-center">
-                    <button
-                      @click="removeParticular(index)"
-                      :disabled="formData.particulars.length <= 1"
-                      class="text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed text-sm px-2 py-1"
-                      title="Remove this row"
-                    >
-                      ✕
-                    </button>
+                    <button @click="removeParticular(index)" :disabled="formData.particulars.length <= 1" class="text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed text-sm px-2 py-1" title="Remove this row">✕</button>
                   </td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr class="bg-gray-100 font-semibold">
-                  <td class="border border-gray-300 px-3 py-2" colspan="2">
-                    Total
-                  </td>
-                  <td
-                    class="border border-gray-300 px-3 py-2 text-right"
-                    colspan="2"
-                  >
-                    ₹ {{ particularsTotal | currency }}
-                  </td>
+                  <td class="border border-gray-300 px-3 py-2" colspan="2">Total</td>
+                  <td class="border border-gray-300 px-3 py-2 text-right" colspan="2">₹ {{ particularsTotal | currency }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -237,44 +131,26 @@
 
           <!-- Add new row button -->
           <div class="mt-4">
-            <button
-              @click="addParticular"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            >
-              + Add New Row
-            </button>
+            <button @click="addParticular" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">+ Add New Row</button>
           </div>
 
-          <p class="mt-3 text-sm text-gray-600">
-            Add as many rows as needed. At least one row is required.
-          </p>
+          <p class="mt-3 text-sm text-gray-600">Add as many rows as needed. At least one row is required.</p>
         </div>
 
         <!-- Cheque Details -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">
-            Cheque Details
-          </h3>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Cheque Details</h3>
           <div class="max-w-md">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Cheque Number</label
-              >
-              <input
-                v-model="formData.chequeNumber"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter cheque number"
-              />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cheque Number</label>
+              <input v-model="formData.chequeNumber" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter cheque number" />
             </div>
           </div>
         </div>
 
         <!-- Authorization Section -->
         <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">
-            Authorization
-          </h3>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">Authorization</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div class="border rounded-lg p-4">
               <p class="text-sm text-gray-600 mb-2">Sig. of Dealing Asst.</p>
@@ -299,74 +175,28 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            @click="generatePreview"
-            class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            Preview Document
-          </button>
-          <button
-            @click="generateDocx"
-            class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Generate DOCX
-          </button>
-          <button
-            @click="clearForm"
-            class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          >
-            Clear Form
-          </button>
+          <button @click="generatePreview" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">Preview Document</button>
+          <button @click="generateDocx" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Generate DOCX</button>
+          <button @click="clearForm" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">Clear Form</button>
         </div>
       </div>
 
       <!-- Preview Modal -->
-      <div
-        v-if="showPreview"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      >
-        <div
-          class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto"
-        >
+      <div v-if="showPreview" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
           <div class="p-6">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-bold">Document Preview</h2>
-              <button
-                @click="showPreview = false"
-                class="text-gray-500 hover:text-gray-700"
-              >
-                <svg
-                  class="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  ></path>
+              <button @click="showPreview = false" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
               </button>
             </div>
-            <div
-              v-html="previewContent"
-              class="border p-4 bg-white text-sm"
-            ></div>
+            <div v-html="previewContent" class="border p-4 bg-white text-sm"></div>
             <div class="mt-4 flex justify-end">
-              <button
-                @click="generateDocx"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
-              >
-                Download DOCX
-              </button>
-              <button
-                @click="showPreview = false"
-                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-              >
-                Close
-              </button>
+              <button @click="generateDocx" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2">Download DOCX</button>
+              <button @click="showPreview = false" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">Close</button>
             </div>
           </div>
         </div>
@@ -399,20 +229,13 @@
         },
         computed: {
           particularsTotal() {
-            return this.formData.particulars.reduce(
-              (sum, item) => sum + (item.amount || 0),
-              0
-            );
+            return this.formData.particulars.reduce((sum, item) => sum + (item.amount || 0), 0);
           },
           formattedPurpose() {
-            let result =
-              "RTGS in favor of nominee/legal heir on the demise of employee to their SB a/c";
+            let result = "RTGS in favor of nominee/legal heir on the demise of employee to their SB a/c";
 
             // Add issued letter info if provided
-            if (
-              this.formData.issuedLetterNo &&
-              this.formData.issuedLetterDate
-            ) {
+            if (this.formData.issuedLetterNo && this.formData.issuedLetterDate) {
               const issuedDate = new Date(this.formData.issuedLetterDate);
               const formattedIssuedDate = issuedDate
                 .toLocaleDateString("en-GB", {
@@ -469,40 +292,8 @@
           numberToWords(num) {
             if (num === 0) return "ZERO";
 
-            const ones = [
-              "",
-              "ONE",
-              "TWO",
-              "THREE",
-              "FOUR",
-              "FIVE",
-              "SIX",
-              "SEVEN",
-              "EIGHT",
-              "NINE",
-              "TEN",
-              "ELEVEN",
-              "TWELVE",
-              "THIRTEEN",
-              "FOURTEEN",
-              "FIFTEEN",
-              "SIXTEEN",
-              "SEVENTEEN",
-              "EIGHTEEN",
-              "NINETEEN",
-            ];
-            const tens = [
-              "",
-              "",
-              "TWENTY",
-              "THIRTY",
-              "FORTY",
-              "FIFTY",
-              "SIXTY",
-              "SEVENTY",
-              "EIGHTY",
-              "NINETY",
-            ];
+            const ones = ["", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"];
+            const tens = ["", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
 
             function convertHundreds(n) {
               let result = "";
@@ -528,8 +319,7 @@
             let result = "";
             if (crores > 0) result += convertHundreds(crores) + " CRORE ";
             if (lakhs > 0) result += convertHundreds(lakhs) + " LAKH ";
-            if (thousands > 0)
-              result += convertHundreds(thousands) + " THOUSAND ";
+            if (thousands > 0) result += convertHundreds(thousands) + " THOUSAND ";
             if (hundreds > 0) result += convertHundreds(hundreds);
 
             return result.trim() + " ONLY";
@@ -553,9 +343,7 @@
           },
           createSimple6ColumnRows() {
             // Filter to only show items with amounts > 0
-            const nonZeroParticulars = this.formData.particulars.filter(
-              (item) => item.amount > 0
-            );
+            const nonZeroParticulars = this.formData.particulars.filter((item) => item.amount > 0);
             let rows = "";
 
             if (nonZeroParticulars.length === 0) {
@@ -568,15 +356,9 @@
             } else {
               nonZeroParticulars.forEach((item, index) => {
                 rows += `<tr>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${
-                    index + 1
-                  }</td>
-                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${
-                    item.description
-                  }</td>
-                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${(
-                    item.amount || 0
-                  ).toLocaleString("en-IN", {
+                  <td style="border: 1px solid #000; padding: 5px; text-align: center; width: 5%;">${index + 1}</td>
+                  <td style="border: 1px solid #000; padding: 5px; width: 35%;">${item.description}</td>
+                  <td style="border: 1px solid #000; padding: 5px; text-align: right; width: 10%;">${(item.amount || 0).toLocaleString("en-IN", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}</td>
@@ -602,20 +384,11 @@
             return rows;
           },
           createDocxTableRows(docxClasses) {
-            const {
-              TableRow,
-              TableCell,
-              Paragraph,
-              TextRun,
-              AlignmentType,
-              WidthType,
-            } = docxClasses;
+            const { TableRow, TableCell, Paragraph, TextRun, AlignmentType, WidthType } = docxClasses;
             const rows = [];
 
             // Filter items with amount > 0 (same as HTML preview)
-            const itemsWithAmount = this.formData.particulars.filter(
-              (item) => item.amount > 0
-            );
+            const itemsWithAmount = this.formData.particulars.filter((item) => item.amount > 0);
 
             // Generate rows (one item per row, all on left side, right side empty)
             for (let i = 0; i < itemsWithAmount.length; i++) {
@@ -696,9 +469,7 @@
                         <div style="margin-bottom: 15px;">
                              <div style="display: flex; justify-content: space-between; align-items: center;">
                                  <p style="margin: 0;"><strong>Name of Payee:</strong> <u>Yourself</u></p>
-                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(
-                                   this.formData.date
-                                 )
+                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(this.formData.date)
                                    .toLocaleDateString("en-GB", {
                                      day: "2-digit",
                                      month: "2-digit",
@@ -706,9 +477,7 @@
                                    })
                                    .replace(/\//g, ".")}</p>
                              </div>
-                             <p style="text-align: justify;"><strong>Particulars of Payment:</strong> <u>${
-                               this.formattedPurpose
-                             }</u></p>
+                             <p style="text-align: justify;"><strong>Particulars of Payment:</strong> <u>${this.formattedPurpose}</u></p>
                         </div>
 
                         <div style="margin-bottom: 15px;">
@@ -719,13 +488,10 @@
                          </div>
 
                         <div style="margin-bottom: 15px;">
-                            <p style="font-weight: bold;">Amount: ₹ <u>${this.particularsTotal.toLocaleString(
-                              "en-IN",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}</u></p>
+                            <p style="font-weight: bold;">Amount: ₹ <u>${this.particularsTotal.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}</u></p>
                         </div>
 
                         <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
@@ -742,13 +508,10 @@
                                     <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">Employee Death Linked Insurance a/c</th>
                                     <th style="border: 1px solid #000; padding: 5px; width: 10%;"></th>
                                     <th style="border: 1px solid #000; padding: 5px; width: 40%;" colspan="2">Bank A/c</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">${this.particularsTotal.toLocaleString(
-                                      "en-IN",
-                                      {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                      }
-                                    )}</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width: 10%;">${this.particularsTotal.toLocaleString("en-IN", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -785,15 +548,10 @@
                         </table>
 
                         <div style="margin-top: 30px; text-align: justify;">
-                            <p style="margin: 0; text-align: justify;">Please Pay Rs. <strong>${this.particularsTotal.toLocaleString(
-                              "en-IN",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )} (RS. ${this.numberToWords(
-              Math.floor(this.particularsTotal)
-            )})</strong> and <strong>Debit Trust A/c no.-1233789900</strong></p>
+                            <p style="margin: 0; text-align: justify;">Please Pay Rs. <strong>${this.particularsTotal.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })} (RS. ${this.numberToWords(Math.floor(this.particularsTotal))})</strong> and <strong>Debit Trust A/c no.-1233789900</strong></p>
                         </div>
 
                         <div style="margin-top: 30px;">
@@ -812,11 +570,7 @@
                         <div style="margin-top: 20px; text-align: left;">
                             <p style="margin: 5px 0;">Paid by Cheque vide Cash book voucher No ___________date___________</p>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px 0;">
-                                <span>Cheque No- <strong>${
-                                  this.formData.chequeNumber || "_______"
-                                }</strong> Date- <strong>${new Date(
-              this.formData.date
-            )
+                                <span>Cheque No- <strong>${this.formData.chequeNumber || "_______"}</strong> Date- <strong>${new Date(this.formData.date)
               .toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "2-digit",
@@ -841,23 +595,10 @@
               } else if (typeof docx !== "undefined") {
                 docxLib = docx;
               } else {
-                throw new Error(
-                  "DOCX library not loaded. Please refresh the page and try again."
-                );
+                throw new Error("DOCX library not loaded. Please refresh the page and try again.");
               }
 
-              const {
-                Document,
-                Packer,
-                Paragraph,
-                TextRun,
-                Table,
-                TableRow,
-                TableCell,
-                AlignmentType,
-                WidthType,
-                BorderStyle,
-              } = docxLib;
+              const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle } = docxLib;
 
               const doc = new Document({
                 styles: {
@@ -1033,13 +774,10 @@
                             size: 24,
                           }),
                           new TextRun({
-                            text: this.particularsTotal.toLocaleString(
-                              "en-IN",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            ),
+                            text: this.particularsTotal.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }),
                             bold: true,
                             size: 24,
                             underline: {},
@@ -1161,13 +899,10 @@
                                   new Paragraph({
                                     children: [
                                       new TextRun({
-                                        text: this.particularsTotal.toLocaleString(
-                                          "en-IN",
-                                          {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                          }
-                                        ),
+                                        text: this.particularsTotal.toLocaleString("en-IN", {
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        }),
                                         bold: true,
                                       }),
                                     ],
@@ -1210,13 +945,10 @@
                                   new Paragraph({
                                     children: [
                                       new TextRun({
-                                        text: this.particularsTotal.toLocaleString(
-                                          "en-IN",
-                                          {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                          }
-                                        ),
+                                        text: this.particularsTotal.toLocaleString("en-IN", {
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        }),
                                         bold: true,
                                       }),
                                     ],
@@ -1245,13 +977,10 @@
                                   new Paragraph({
                                     children: [
                                       new TextRun({
-                                        text: this.particularsTotal.toLocaleString(
-                                          "en-IN",
-                                          {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                          }
-                                        ),
+                                        text: this.particularsTotal.toLocaleString("en-IN", {
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        }),
                                         bold: true,
                                       }),
                                     ],
@@ -1323,9 +1052,7 @@
                               new TableCell({
                                 children: [
                                   new Paragraph({
-                                    children: [
-                                      new TextRun("Passed for Payment"),
-                                    ],
+                                    children: [new TextRun("Passed for Payment")],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                 ],
@@ -1351,15 +1078,11 @@
                                   new Paragraph(""),
                                   new Paragraph(""),
                                   new Paragraph({
-                                    children: [
-                                      new TextRun("_________________"),
-                                    ],
+                                    children: [new TextRun("_________________")],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                   new Paragraph({
-                                    children: [
-                                      new TextRun("Sig. of Dealing Asst."),
-                                    ],
+                                    children: [new TextRun("Sig. of Dealing Asst.")],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                   new Paragraph(""),
@@ -1381,15 +1104,11 @@
                                   new Paragraph(""),
                                   new Paragraph(""),
                                   new Paragraph({
-                                    children: [
-                                      new TextRun("_________________"),
-                                    ],
+                                    children: [new TextRun("_________________")],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                   new Paragraph({
-                                    children: [
-                                      new TextRun("Sig. of Accountant"),
-                                    ],
+                                    children: [new TextRun("Sig. of Accountant")],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                   new Paragraph(""),
@@ -1411,9 +1130,7 @@
                                   new Paragraph(""),
                                   new Paragraph(""),
                                   new Paragraph({
-                                    children: [
-                                      new TextRun("_________________"),
-                                    ],
+                                    children: [new TextRun("_________________")],
                                     alignment: AlignmentType.CENTER,
                                   }),
                                   new Paragraph({
@@ -1444,15 +1161,10 @@
                         children: [
                           new TextRun("Please Pay Rs. "),
                           new TextRun({
-                            text: `${this.particularsTotal.toLocaleString(
-                              "en-IN",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )} (RS. ${this.numberToWords(
-                              Math.floor(this.particularsTotal)
-                            )})`,
+                            text: `${this.particularsTotal.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })} (RS. ${this.numberToWords(Math.floor(this.particularsTotal))})`,
                             bold: true,
                           }),
                           new TextRun(" and "),
@@ -1530,11 +1242,7 @@
 
                       // Cheque payment details
                       new Paragraph({
-                        children: [
-                          new TextRun(
-                            "Paid by Cheque vide Cash book voucher No ___________date___________"
-                          ),
-                        ],
+                        children: [new TextRun("Paid by Cheque vide Cash book voucher No ___________date___________")],
                         alignment: AlignmentType.LEFT,
                       }),
                       new Table({
@@ -1562,9 +1270,7 @@
                                         font: "Arial",
                                       }),
                                       new TextRun({
-                                        text:
-                                          this.formData.chequeNumber ||
-                                          "_______",
+                                        text: this.formData.chequeNumber || "_______",
                                         bold: true,
                                         font: "Arial",
                                       }),
@@ -1646,9 +1352,7 @@
               alert("EDLI DOCX file generated successfully!");
             } catch (error) {
               console.error("Error generating DOCX:", error);
-              alert(
-                "Error generating DOCX file. Please check the console for details."
-              );
+              alert("Error generating DOCX file. Please check the console for details.");
             }
           },
           clearForm() {
