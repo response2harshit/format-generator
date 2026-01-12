@@ -33,6 +33,16 @@
 
       <!-- Main Form -->
       <div class="bg-white rounded-lg shadow-md p-6">
+        <!-- Logo Upload -->
+        <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">📷 Logo (Optional)</h3>
+          <div class="flex items-center gap-4">
+            <input type="file" @change="handleLogoUpload" accept="image/png,image/jpeg,image/jpg" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
+            <span v-if="logoFileName" class="text-sm text-green-600">✓ {{ logoFileName }}</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Select logo.png to include it in preview and generated DOCX</p>
+        </div>
+
         <!-- Letter Details -->
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-gray-700 mb-3">Letter Details</h3>
@@ -197,7 +207,8 @@
           showPreview: false,
           previewContent: "",
           isAutoSyncingChequeDate: false,
-          logoUrl: "./logo.png",
+          logoUrl: null,
+          logoFileName: "",
           formData: {
             letterNo: "Sec/UNL/CPF Trust/",
             date: new Date().toISOString().split("T")[0],
@@ -366,6 +377,24 @@
           },
         },
         methods: {
+          handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+              this.logoFileName = file.name;
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                this.logoUrl = e.target.result; // Base64 data URL
+                console.log("Logo loaded successfully:", this.logoFileName);
+              };
+              reader.onerror = (error) => {
+                console.error("Error reading logo file:", error);
+                alert("Failed to load logo file. Please try again.");
+                this.logoFileName = "";
+                this.logoUrl = null;
+              };
+              reader.readAsDataURL(file);
+            }
+          },
           formatDate(dateStr) {
             const date = new Date(dateStr);
             return date
@@ -484,12 +513,15 @@
                 <!-- Header with Logo and Address -->
                 <div style="text-align: center; margin-bottom: 20px;">
                   <div style="display: flex; align-items: flex-start; justify-content: center; gap: 20px;">
+                    ${
+                      this.logoUrl
+                        ? `
                     <div style="flex-shrink: 0; margin-top: 10px;">
-                      <img src="${this.logoUrl}" alt="UPRVUNL Logo" style="width: 100px; height: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                      <div style="width: 80px; height: 80px; border: 2px solid #000; border-radius: 50%; display: none; align-items: center; justify-content: center;">
-                        <span style="font-size: 10px;">UPRVUNL</span>
-                      </div>
+                      <img src="${this.logoUrl}" alt="UPRVUNL Logo" style="width: 100px; height: auto;" />
                     </div>
+                    `
+                        : ""
+                    }
                     <div style="flex: 1; text-align: center;">
                       <h2 style="margin: 0; font-size: 16px; font-weight: bold;">U.P. RAJYA VIDYUT UTPADAN NIGAM CPF TRUST</h2>
                       <p style="margin: 2px 0; font-size: 14px; font-weight: bold;">9th Floor, Shakti Bhawan Extn., Room No. 928</p>
@@ -602,20 +634,23 @@
 
               const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, HeadingLevel, UnderlineType, ImageRun } = docxLib;
 
-              // Fetch logo image from local file
+              // Convert Base64 logo to Uint8Array
               let logoImageData = null;
               try {
-                console.log("Fetching logo from:", this.logoUrl);
-                const response = await fetch(this.logoUrl);
-                if (!response.ok) {
-                  throw new Error(`Failed to fetch logo: ${response.status}`);
+                if (this.logoUrl && this.logoUrl.startsWith("data:image")) {
+                  // Extract Base64 string from data URL
+                  const base64String = this.logoUrl.split(",")[1];
+                  // Convert Base64 to binary string
+                  const binaryString = atob(base64String);
+                  // Convert binary string to Uint8Array
+                  logoImageData = new Uint8Array(binaryString.length);
+                  for (let i = 0; i < binaryString.length; i++) {
+                    logoImageData[i] = binaryString.charCodeAt(i);
+                  }
+                  console.log("Logo converted successfully, size:", logoImageData.length, "bytes");
                 }
-                const blob = await response.blob();
-                const arrayBuffer = await blob.arrayBuffer();
-                logoImageData = new Uint8Array(arrayBuffer);
-                console.log("Logo fetched successfully, size:", logoImageData.length, "bytes");
               } catch (error) {
-                console.error("Could not fetch logo:", error);
+                console.error("Could not convert logo:", error);
                 alert("Note: Logo could not be loaded. The document will be generated without the logo.");
               }
 
