@@ -41,10 +41,8 @@
 
     <!-- Authentication Check -->
     <script>
-      // Check authentication before allowing access
       (function() {
-        const isAuth = sessionStorage.getItem('uppcl_auth') === 'authenticated';
-        if (!isAuth) {
+        if (sessionStorage.getItem('_sess') !== '1') {
           window.location.href = 'index.html';
         }
       })();

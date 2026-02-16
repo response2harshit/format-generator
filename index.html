@@ -99,7 +99,7 @@
     </style>
 
     <script>
-      const CORRECT_PASSWORD_HASH = "fe3c11e100f198611ccacec95ddf4b2d882969ac1b08e07684d93970912c42e4";
+      const _0x4f2a = "fe3c11e100f198611ccacec95ddf4b2d882969ac1b08e07684d93970912c42e4";
 
       async function hashPassword(password) {
         const encoder = new TextEncoder();
@@ -126,10 +126,9 @@
 
         const hash = await hashPassword(password);
 
-        if (hash === CORRECT_PASSWORD_HASH) {
-          // Set authentication in sessionStorage
-          sessionStorage.setItem("uppcl_auth", "authenticated");
-          sessionStorage.setItem("uppcl_auth_time", Date.now());
+        if (hash === _0x4f2a) {
+          sessionStorage.setItem("_sess", "1");
+          sessionStorage.setItem("_ts", Date.now());
 
           // Hide password overlay and show main content
           document.getElementById("passwordOverlay").style.display = "none";
@@ -144,9 +143,8 @@
         }
       }
 
-      // Check if already authenticated
       window.addEventListener("DOMContentLoaded", function () {
-        const isAuth = sessionStorage.getItem("uppcl_auth") === "authenticated";
+        const isAuth = sessionStorage.getItem("_sess") === "1";
 
         if (isAuth) {
           document.getElementById("passwordOverlay").style.display = "none";
