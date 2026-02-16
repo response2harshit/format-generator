@@ -63,7 +63,7 @@
         align-items: center;
         justify-content: center;
       }
-      
+
       .glass-effect {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
@@ -78,74 +78,87 @@
       }
 
       @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-        20%, 40%, 60%, 80% { transform: translateX(10px); }
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-10px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(10px);
+        }
       }
     </style>
 
     <script>
-      // Password authentication using SHA-256
-      const CORRECT_PASSWORD_HASH = "fe3c11e100f198611ccacec95ddf4b2d882969ac1b08e07684d93970912c42e4"; // SHA-256 hash of "cpf@2026$"
+      const CORRECT_PASSWORD_HASH = "fe3c11e100f198611ccacec95ddf4b2d882969ac1b08e07684d93970912c42e4";
 
       async function hashPassword(password) {
         const encoder = new TextEncoder();
         const data = encoder.encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
         return hashHex;
       }
 
       async function checkPassword() {
-        const passwordInput = document.getElementById('passwordInput');
+        const passwordInput = document.getElementById("passwordInput");
         const password = passwordInput.value;
-        const errorMsg = document.getElementById('errorMsg');
-        const passwordBox = document.getElementById('passwordBox');
+        const errorMsg = document.getElementById("errorMsg");
+        const passwordBox = document.getElementById("passwordBox");
 
         if (!password) {
-          errorMsg.textContent = 'Please enter a password';
-          errorMsg.classList.remove('hidden');
-          passwordBox.classList.add('shake');
-          setTimeout(() => passwordBox.classList.remove('shake'), 500);
+          errorMsg.textContent = "Please enter a password";
+          errorMsg.classList.remove("hidden");
+          passwordBox.classList.add("shake");
+          setTimeout(() => passwordBox.classList.remove("shake"), 500);
           return;
         }
 
         const hash = await hashPassword(password);
-        
+
         if (hash === CORRECT_PASSWORD_HASH) {
           // Set authentication in sessionStorage
-          sessionStorage.setItem('uppcl_auth', 'authenticated');
-          sessionStorage.setItem('uppcl_auth_time', Date.now());
-          
+          sessionStorage.setItem("uppcl_auth", "authenticated");
+          sessionStorage.setItem("uppcl_auth_time", Date.now());
+
           // Hide password overlay and show main content
-          document.getElementById('passwordOverlay').style.display = 'none';
-          document.getElementById('mainContent').style.display = 'block';
+          document.getElementById("passwordOverlay").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
         } else {
-          errorMsg.textContent = 'Incorrect password. Please try again.';
-          errorMsg.classList.remove('hidden');
-          passwordBox.classList.add('shake');
-          setTimeout(() => passwordBox.classList.remove('shake'), 500);
-          passwordInput.value = '';
+          errorMsg.textContent = "Incorrect password. Please try again.";
+          errorMsg.classList.remove("hidden");
+          passwordBox.classList.add("shake");
+          setTimeout(() => passwordBox.classList.remove("shake"), 500);
+          passwordInput.value = "";
           passwordInput.focus();
         }
       }
 
       // Check if already authenticated
-      window.addEventListener('DOMContentLoaded', function() {
-        const isAuth = sessionStorage.getItem('uppcl_auth') === 'authenticated';
-        
+      window.addEventListener("DOMContentLoaded", function () {
+        const isAuth = sessionStorage.getItem("uppcl_auth") === "authenticated";
+
         if (isAuth) {
-          document.getElementById('passwordOverlay').style.display = 'none';
-          document.getElementById('mainContent').style.display = 'block';
+          document.getElementById("passwordOverlay").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
         } else {
-          document.getElementById('passwordInput').focus();
+          document.getElementById("passwordInput").focus();
         }
       });
 
       // Allow Enter key to submit
       function handleKeyPress(event) {
-        if (event.key === 'Enter') {
+        if (event.key === "Enter") {
           checkPassword();
         }
       }
@@ -164,27 +177,14 @@
           <h2 class="text-2xl font-bold text-gray-800 mb-2">Secure Access</h2>
           <p class="text-gray-600 text-sm">Please enter your password to continue</p>
         </div>
-        
+
         <div class="mb-5">
-          <input 
-            type="password" 
-            id="passwordInput" 
-            onkeypress="handleKeyPress(event)"
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-center text-lg"
-            placeholder="Enter password"
-          />
+          <input type="password" id="passwordInput" onkeypress="handleKeyPress(event)" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-center text-lg" placeholder="Enter password" />
         </div>
 
-        <div id="errorMsg" class="hidden text-red-600 text-sm text-center mb-4 bg-red-50 py-2 px-3 rounded-lg">
-          Incorrect password. Please try again.
-        </div>
+        <div id="errorMsg" class="hidden text-red-600 text-sm text-center mb-4 bg-red-50 py-2 px-3 rounded-lg">Incorrect password. Please try again.</div>
 
-        <button 
-          onclick="checkPassword()"
-          class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02]"
-        >
-          Access
-        </button>
+        <button onclick="checkPassword()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02]">Access</button>
 
         <div class="mt-6 text-center">
           <div class="flex items-center justify-center space-x-2 text-gray-500 text-xs">
@@ -199,157 +199,157 @@
 
     <!-- Main Content -->
     <div id="mainContent">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-      <!-- Header Section -->
-      <header class="text-center mb-12">
-        <div class="flex items-center justify-center mb-6">
-          <img src="logo.png" alt="UPPCL Logo" class="h-20 w-20 object-contain mr-4" onerror="this.style.display='none'" />
-          <div>
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">UPPCL</h1>
-            <p class="text-xl text-gray-600">Format Generators</p>
+      <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header Section -->
+        <header class="text-center mb-12">
+          <div class="flex items-center justify-center mb-6">
+            <img src="logo.png" alt="UPPCL Logo" class="h-20 w-20 object-contain mr-4" onerror="this.style.display='none'" />
+            <div>
+              <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">UPPCL</h1>
+              <p class="text-xl text-gray-600">Format Generators</p>
+            </div>
+          </div>
+          <p class="text-gray-500 max-w-2xl mx-auto">Generate official payment authority forms and documents for Uttar Pradesh Power Corporation Limited with ease and accuracy.</p>
+        </header>
+
+        <!-- Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <!-- Advance Format Generator -->
+          <a href="advance-format-generator.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
+            <div class="p-6">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Advance Payment</h3>
+              <p class="text-gray-600 text-sm mb-4">Generate CPF advance payment authority forms through RTGS to employees at Nigam Headquarter/project.</p>
+              <div class="flex items-center text-blue-600 font-medium">
+                <span>Open Generator</span>
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </a>
+
+          <!-- Final Payment Generator -->
+          <a href="final-payment.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
+            <div class="p-6">
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Final Payment</h3>
+              <p class="text-gray-600 text-sm mb-4">Create final payment authority documents for CPF settlements and completed transactions.</p>
+              <div class="flex items-center text-green-600 font-medium">
+                <span>Open Generator</span>
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </a>
+
+          <!-- EDLI Payment Generator -->
+          <a href="edli-payment-generator.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
+            <div class="p-6">
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">EDLI Payment</h3>
+              <p class="text-gray-600 text-sm mb-4">Generate Employee's Deposit Linked Insurance payment authority forms and documents.</p>
+              <div class="flex items-center text-purple-600 font-medium">
+                <span>Open Generator</span>
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </a>
+
+          <!-- Bank Letter Generator -->
+          <a href="bank-letter.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
+            <div class="p-6">
+              <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Bank Letter</h3>
+              <p class="text-gray-600 text-sm mb-4">Create official bank correspondence letters for UPPCL transactions and communications.</p>
+              <div class="flex items-center text-orange-600 font-medium">
+                <span>Open Generator</span>
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </a>
+
+          <!-- Blank Format Generator -->
+          <a href="blank.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
+            <div class="p-6">
+              <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Blank Format</h3>
+              <p class="text-gray-600 text-sm mb-4">Start with a blank template to create custom payment authority forms as needed.</p>
+              <div class="flex items-center text-gray-600 font-medium">
+                <span>Open Generator</span>
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Features Section -->
+        <div class="bg-white rounded-xl shadow-md p-8 mb-8">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Key Features</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+              <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </div>
+              <h3 class="font-semibold text-gray-800 mb-2">Fast & Easy</h3>
+              <p class="text-sm text-gray-600">Generate documents in seconds with our intuitive interface</p>
+            </div>
+            <div class="text-center">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h3 class="font-semibold text-gray-800 mb-2">Accurate Format</h3>
+              <p class="text-sm text-gray-600">Official UPPCL format compliance guaranteed</p>
+            </div>
+            <div class="text-center">
+              <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+              </div>
+              <h3 class="font-semibold text-gray-800 mb-2">Export to DOCX</h3>
+              <p class="text-sm text-gray-600">Download ready-to-print Word documents instantly</p>
+            </div>
           </div>
         </div>
-        <p class="text-gray-500 max-w-2xl mx-auto">Generate official payment authority forms and documents for Uttar Pradesh Power Corporation Limited with ease and accuracy.</p>
-      </header>
 
-      <!-- Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Advance Format Generator -->
-        <a href="advance-format-generator.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
-          <div class="p-6">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Advance Payment</h3>
-            <p class="text-gray-600 text-sm mb-4">Generate CPF advance payment authority forms through RTGS to employees at Nigam Headquarter/project.</p>
-            <div class="flex items-center text-blue-600 font-medium">
-              <span>Open Generator</span>
-              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </div>
-          </div>
-        </a>
-
-        <!-- Final Payment Generator -->
-        <a href="final-payment.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
-          <div class="p-6">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Final Payment</h3>
-            <p class="text-gray-600 text-sm mb-4">Create final payment authority documents for CPF settlements and completed transactions.</p>
-            <div class="flex items-center text-green-600 font-medium">
-              <span>Open Generator</span>
-              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </div>
-          </div>
-        </a>
-
-        <!-- EDLI Payment Generator -->
-        <a href="edli-payment-generator.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
-          <div class="p-6">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">EDLI Payment</h3>
-            <p class="text-gray-600 text-sm mb-4">Generate Employee's Deposit Linked Insurance payment authority forms and documents.</p>
-            <div class="flex items-center text-purple-600 font-medium">
-              <span>Open Generator</span>
-              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </div>
-          </div>
-        </a>
-
-        <!-- Bank Letter Generator -->
-        <a href="bank-letter.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
-          <div class="p-6">
-            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Bank Letter</h3>
-            <p class="text-gray-600 text-sm mb-4">Create official bank correspondence letters for UPPCL transactions and communications.</p>
-            <div class="flex items-center text-orange-600 font-medium">
-              <span>Open Generator</span>
-              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </div>
-          </div>
-        </a>
-
-        <!-- Blank Format Generator -->
-        <a href="blank.html" class="card-animate card-hover block bg-white rounded-xl shadow-md overflow-hidden opacity-0">
-          <div class="p-6">
-            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Blank Format</h3>
-            <p class="text-gray-600 text-sm mb-4">Start with a blank template to create custom payment authority forms as needed.</p>
-            <div class="flex items-center text-gray-600 font-medium">
-              <span>Open Generator</span>
-              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </div>
-          </div>
-        </a>
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm">
+          <p>&copy; 2026 UPPCL Format Generators. All rights reserved.</p>
+          <p class="mt-2">U. P. Rajya Vidyut Utpadan Nigam CPF Trust</p>
+        </footer>
       </div>
-
-      <!-- Features Section -->
-      <div class="bg-white rounded-xl shadow-md p-8 mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Key Features</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="text-center">
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-2">Fast & Easy</h3>
-            <p class="text-sm text-gray-600">Generate documents in seconds with our intuitive interface</p>
-          </div>
-          <div class="text-center">
-            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-2">Accurate Format</h3>
-            <p class="text-sm text-gray-600">Official UPPCL format compliance guaranteed</p>
-          </div>
-          <div class="text-center">
-            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-              </svg>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-2">Export to DOCX</h3>
-            <p class="text-sm text-gray-600">Download ready-to-print Word documents instantly</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <footer class="text-center text-gray-500 text-sm">
-        <p>&copy; 2026 UPPCL Format Generators. All rights reserved.</p>
-        <p class="mt-2">U. P. Rajya Vidyut Utpadan Nigam CPF Trust</p>
-      </footer>
-    </div>
     </div>
   </body>
 </html>
