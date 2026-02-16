@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="googlebot" content="noindex, nofollow" />
-    <title>EDLI Payment Authority Form - UPPCL</title>
+    <title>EDLI Payment Form</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,6 +37,17 @@
           console.log("DOCX library available via global docx:", Object.keys(docx));
         }
       });
+    </script>
+
+    <!-- Authentication Check -->
+    <script>
+      // Check authentication before allowing access
+      (function() {
+        const isAuth = sessionStorage.getItem('uppcl_auth') === 'authenticated';
+        if (!isAuth) {
+          window.location.href = 'index.html';
+        }
+      })();
     </script>
   </head>
   <body class="bg-gray-50 min-h-screen">

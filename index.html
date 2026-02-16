@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="googlebot" content="noindex, nofollow" />
-    <title>UPPCL Format Generators</title>
+    <title>Access Required</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -50,9 +50,155 @@
         transform: translateY(-8px);
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       }
+
+      #passwordOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+      }
+
+      #mainContent {
+        display: none;
+      }
+
+      .shake {
+        animation: shake 0.5s;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+        20%, 40%, 60%, 80% { transform: translateX(10px); }
+      }
     </style>
+
+    <script>
+      // Password authentication using SHA-256
+      const CORRECT_PASSWORD_HASH = "fe3c11e100f198611ccacec95ddf4b2d882969ac1b08e07684d93970912c42e4"; // SHA-256 hash of "cpf@2026$"
+
+      async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+      }
+
+      async function checkPassword() {
+        const passwordInput = document.getElementById('passwordInput');
+        const password = passwordInput.value;
+        const errorMsg = document.getElementById('errorMsg');
+        const passwordBox = document.getElementById('passwordBox');
+
+        if (!password) {
+          errorMsg.textContent = 'Please enter a password';
+          errorMsg.classList.remove('hidden');
+          passwordBox.classList.add('shake');
+          setTimeout(() => passwordBox.classList.remove('shake'), 500);
+          return;
+        }
+
+        const hash = await hashPassword(password);
+        
+        if (hash === CORRECT_PASSWORD_HASH) {
+          // Set authentication in sessionStorage
+          sessionStorage.setItem('uppcl_auth', 'authenticated');
+          sessionStorage.setItem('uppcl_auth_time', Date.now());
+          
+          // Hide password overlay and show main content
+          document.getElementById('passwordOverlay').style.display = 'none';
+          document.getElementById('mainContent').style.display = 'block';
+        } else {
+          errorMsg.textContent = 'Incorrect password. Please try again.';
+          errorMsg.classList.remove('hidden');
+          passwordBox.classList.add('shake');
+          setTimeout(() => passwordBox.classList.remove('shake'), 500);
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
+      }
+
+      // Check if already authenticated
+      window.addEventListener('DOMContentLoaded', function() {
+        const isAuth = sessionStorage.getItem('uppcl_auth') === 'authenticated';
+        
+        if (isAuth) {
+          document.getElementById('passwordOverlay').style.display = 'none';
+          document.getElementById('mainContent').style.display = 'block';
+        } else {
+          document.getElementById('passwordInput').focus();
+        }
+      });
+
+      // Allow Enter key to submit
+      function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+          checkPassword();
+        }
+      }
+    </script>
   </head>
   <body class="bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen">
+    <!-- Password Overlay -->
+    <div id="passwordOverlay">
+      <div id="passwordBox" class="glass-effect rounded-2xl shadow-2xl p-10 max-w-md w-full mx-4">
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">Secure Access</h2>
+          <p class="text-gray-600 text-sm">Please enter your password to continue</p>
+        </div>
+        
+        <div class="mb-5">
+          <input 
+            type="password" 
+            id="passwordInput" 
+            onkeypress="handleKeyPress(event)"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-center text-lg"
+            placeholder="Enter password"
+          />
+        </div>
+
+        <div id="errorMsg" class="hidden text-red-600 text-sm text-center mb-4 bg-red-50 py-2 px-3 rounded-lg">
+          Incorrect password. Please try again.
+        </div>
+
+        <button 
+          onclick="checkPassword()"
+          class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+        >
+          Access
+        </button>
+
+        <div class="mt-6 text-center">
+          <div class="flex items-center justify-center space-x-2 text-gray-500 text-xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            <span>Protected content</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
       <!-- Header Section -->
       <header class="text-center mb-12">
@@ -203,6 +349,7 @@
         <p>&copy; 2026 UPPCL Format Generators. All rights reserved.</p>
         <p class="mt-2">U. P. Rajya Vidyut Utpadan Nigam CPF Trust</p>
       </footer>
+    </div>
     </div>
   </body>
 </html>
