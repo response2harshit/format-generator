@@ -306,13 +306,11 @@
               .filter((letter) => letter.number && letter.date)
               .map((letter) => {
                 const date = new Date(letter.date);
-                const formattedDate = date
-                  .toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
-                  .replace(/\//g, ".");
+                const formattedDate = date.toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                });
                 return `${letter.number} DT. ${formattedDate}`;
               })
               .join(", ");
@@ -322,13 +320,11 @@
             // Add issued letter info if provided
             if (this.formData.issuedLetterNo && this.formData.issuedLetterDate) {
               const issuedDate = new Date(this.formData.issuedLetterDate);
-              const formattedIssuedDate = issuedDate
-                .toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
-                .replace(/\//g, ".");
+              const formattedIssuedDate = issuedDate.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              });
               result += ` issued vide letter no. ${this.formData.issuedLetterNo} dt ${formattedIssuedDate}.`;
             }
 
@@ -644,7 +640,7 @@
           createPreviewHTML() {
             return `
                         <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="font-size: 18px; font-weight: bold; margin: 0;">U. P. Rajya Vidyut Utpadan Nigam Ltd.</h1>
+                            <h1 style="font-size: 18px; font-weight: bold; margin: 0;">U. P. Rajya Vidyut Utpadan Nigam CPF Trust</h1>
                             <p style="margin: 5px 0;">CONTRIBUTORY PROVIDENT FUND TRUST</p>
                             <p style="font-weight: bold; margin: 10px 0;">PAYMENT AUTHORITY</p>
                         </div>
@@ -652,13 +648,11 @@
                         <div style="margin-bottom: 15px;">
                              <div style="display: flex; justify-content: space-between; align-items: center;">
                                  <p style="margin: 0;"><strong>Name of Payee:</strong> <u>Yourself</u></p>
-                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(this.formData.date)
-                                   .toLocaleDateString("en-GB", {
-                                     day: "2-digit",
-                                     month: "2-digit",
-                                     year: "numeric",
-                                   })
-                                   .replace(/\//g, ".")}</p>
+                                 <p style="margin: 0;"><strong>Date:</strong> ${new Date(this.formData.date).toLocaleDateString("en-GB", {
+                                   day: "2-digit",
+                                   month: "2-digit",
+                                   year: "numeric",
+                                 })}</p>
                              </div>
                              <p style="text-align: justify;"><strong>Particulars of Payment:</strong> <u>${this.formattedPurpose}</u></p>
                         </div>
@@ -753,13 +747,11 @@
                         <div style="margin-top: 20px; text-align: left;">
                             <p style="margin: 5px 0;">Paid by Cheque vide Cash book voucher No ___________date___________</p>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px 0;">
-                                <span>Cheque No- <strong>${this.formData.chequeNumber || "_______"}</strong> Date- <strong>${new Date(this.formData.date)
-              .toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-              .replace(/\//g, ".")}</strong></span>
+                                <span>Cheque No- <strong>${this.formData.chequeNumber || "_______"}</strong> Date- <strong>${new Date(this.formData.date).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}</strong></span>
                                 <span>Sig. of Cashier</span>
                             </div>
                         </div>
@@ -874,7 +866,7 @@
                       new Paragraph({
                         children: [
                           new TextRun({
-                            text: "U. P. Rajya Vidyut Utpadan Nigam Ltd.",
+                            text: "U. P. Rajya Vidyut Utpadan Nigam CPF Trust",
                             bold: true,
                             size: 28,
                           }),
@@ -954,13 +946,11 @@
                                         bold: true,
                                       }),
                                       new TextRun({
-                                        text: new Date(this.formData.date)
-                                          .toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "numeric",
-                                          })
-                                          .replace(/\//g, "."),
+                                        text: new Date(this.formData.date).toLocaleDateString("en-GB", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                          year: "numeric",
+                                        }),
                                       }),
                                     ],
                                     alignment: AlignmentType.RIGHT,
@@ -1532,13 +1522,11 @@
                                         font: "Arial",
                                       }),
                                       new TextRun({
-                                        text: new Date(this.formData.date)
-                                          .toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "numeric",
-                                          })
-                                          .replace(/\//g, "."),
+                                        text: new Date(this.formData.date).toLocaleDateString("en-GB", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                          year: "numeric",
+                                        }),
                                         bold: true,
                                         font: "Arial",
                                       }),
