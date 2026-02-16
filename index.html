@@ -56,16 +56,24 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%, #f093fb 100%);
         z-index: 9999;
         display: flex;
         align-items: center;
         justify-content: center;
       }
-
+      
       .glass-effect {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      
+      .login-gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
       #mainContent {
@@ -164,31 +172,74 @@
   <body class="bg-gradient-to-br from-blue-50 via-white to-blue-50 min-h-screen">
     <!-- Password Overlay -->
     <div id="passwordOverlay">
-      <div id="passwordBox" class="glass-effect rounded-2xl shadow-2xl p-10 max-w-md w-full mx-4">
-        <div class="text-center mb-8">
-          <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-            </svg>
+      <div id="passwordBox" class="glass-effect rounded-3xl shadow-2xl p-12 max-w-lg w-full mx-4">
+        <!-- Logo/Icon Section -->
+        <div class="text-center mb-10">
+          <div class="relative inline-block mb-6">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl blur-xl opacity-50"></div>
+            <div class="relative w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform duration-300">
+              <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
           </div>
-          <h2 class="text-2xl font-bold text-gray-800 mb-2">Secure Access</h2>
-          <p class="text-gray-600 text-sm">Please enter your password to continue</p>
+          <h2 class="text-3xl font-bold mb-3">
+            <span class="login-gradient-text">Secure Access</span>
+          </h2>
+          <p class="text-gray-600">Enter your credentials to access the platform</p>
+        </div>
+        
+        <!-- Password Input -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="passwordInput" 
+              onkeypress="handleKeyPress(event)"
+              class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-lg"
+              placeholder="••••••••"
+            />
+            <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+              </svg>
+            </div>
+          </div>
         </div>
 
-        <div class="mb-5">
-          <input type="password" id="passwordInput" onkeypress="handleKeyPress(event)" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-center text-lg" placeholder="Enter password" />
+        <!-- Error Message -->
+        <div id="errorMsg" class="hidden mb-6">
+          <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-red-700 text-sm font-medium">Incorrect password. Please try again.</p>
+            </div>
+          </div>
         </div>
 
-        <div id="errorMsg" class="hidden text-red-600 text-sm text-center mb-4 bg-red-50 py-2 px-3 rounded-lg">Incorrect password. Please try again.</div>
-
-        <button onclick="checkPassword()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02]">Access</button>
-
-        <div class="mt-6 text-center">
-          <div class="flex items-center justify-center space-x-2 text-gray-500 text-xs">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        <!-- Access Button -->
+        <button 
+          onclick="checkPassword()"
+          class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <span class="flex items-center justify-center">
+            Access Platform
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
-            <span>Protected content</span>
+          </span>
+        </button>
+
+        <!-- Footer Info -->
+        <div class="mt-8 text-center">
+          <div class="flex items-center justify-center space-x-2 text-gray-500 text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+            <span>Protected & Encrypted</span>
           </div>
         </div>
       </div>
